@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Extractor · v1.3</title>
+<title>Concept Extractor · v1.4</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -197,7 +197,7 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Song Concept · Signal Tools · v1.3</div>
+    <div class="kicker">Song Concept · Signal Tools · v1.4</div>
     <h1><span class="glitch" data-t="CONCEPT EXTRACTOR">CONCEPT EXTRACTOR</span></h1>
     <p class="sub">Paste lyrics → get one <b>vivid, generator-ready concept</b> you can drop straight into your lyric generator.</p>
   </header>
@@ -237,12 +237,12 @@
   <div class="keybar">
     Running on GitHub Pages? Keys are stored only in this browser.<br>
     <div class="key-inputs">
-      <input id="groqKey" type="password" placeholder="Groq API key (primary)" />
-      <input id="anthropicKey" type="password" placeholder="Anthropic API key (fallback)" />
+      <input id="anthropicKey" type="password" placeholder="Anthropic API key (primary)" />
+      <input id="groqKey" type="password" placeholder="Groq API key (fallback)" />
     </div>
   </div>
 
-  <footer>Version 1.3 · Stay tuned.</footer>
+  <footer>Version 1.4 · Stay tuned.</footer>
 </div>
 
 <script>
@@ -278,15 +278,26 @@ HARD RULES:
 - Do not describe or reference the original song.
 - Do not use abstract emotional labels. Say what is happening, not what it means.
 - Start with a concrete human situation: "A person…" / "Someone…" / "A speaker…"
-- Include: the specific wound, the contradiction keeping them stuck, a vivid physical detail or scene, and what the new song should explore.
+- Include: the specific wound, the contradiction keeping them stuck, one vivid physical detail grounded in the real world, and what the new song should explore.
 - The output must feel like a fresh song idea, not an analysis or report.
 
-BANNED PATTERNS (do not produce these):
-- Abstract labeling: "toxic relationship", "emotional conflict", "need for closure", "fear of the unknown", "deep-seated pain", "validation", "healing", "autonomy", "inner demons", "emotional journey", "broken pieces", "spark of defiance"
+BANNED PATTERNS — do not produce any of the following:
+- Direct abstract labels: "toxic relationship", "emotional conflict", "need for closure", "fear of the unknown", "deep-seated pain", "validation", "healing", "autonomy", "inner demons", "emotional journey", "broken pieces", "spark of defiance"
 - Generic resolution arcs: "break free", "find themselves", "overcome the darkness", "uncertain freedom"
 - Vague trapping language: "suffocating grip", "trapped in a relationship", "chains that bind", "darkness closes in"
+- Abstract emotion dressed as physical image: "the weight of unspoken words", "the fog of grief", "a storm inside", "the ache of absence", "silence pressing down", "the air thick with tension", "suspended between past and future", "pulled in two directions"
+- Psychological summary disguised as scene: "they're forced to confront", "they must reckon with", "they carry the burden of", "grappling with", "the question of who they are"
 
-QUALITY GATE: If the paragraph could describe 500 different songs, it failed. If it gives a lyric writer a specific scene, a specific wound, and a specific contradiction, it passed.`;
+THE CORE FAILURE MODE TO AVOID:
+Lifting an image from the lyrics (smoke, a room, a door) and wrapping it in emotional abstraction ("the weight of unspoken words", "the uncertainty of their future"). This looks concrete but is still generic. A real physical detail means: a specific object, a specific action, a specific moment — not a symbolic atmosphere.
+
+BAD: "the air clings to their skin, heavy with the weight of unspoken words"
+GOOD: "they have already packed the car but keep walking back inside to check that the windows are locked"
+
+BAD: "suspended between the hurt of their past and the uncertainty of their future"
+GOOD: "the only thing left to settle is whether the other person will ever say it happened"
+
+QUALITY GATE: If the paragraph could describe 500 different songs, it failed. If it gives a lyric writer a specific scene, a specific wound, and a specific contradiction that could only fit this song, it passed.`;
 
 function buildPrompt(lyrics, title, source) {
   const parts = [];
@@ -345,10 +356,10 @@ async function callClaude(system, user) {
 }
 
 async function runWithRetry(system, user) {
-  // Try Groq first (primary), then Claude fallback, with one retry each
+  // Claude primary, Groq fallback
   const attempts = [];
-  if($('groqKey').value.trim()) attempts.push(() => callGroq(system, user));
   if($('anthropicKey').value.trim()) attempts.push(() => callClaude(system, user));
+  if($('groqKey').value.trim()) attempts.push(() => callGroq(system, user));
   if(!attempts.length) throw new Error('No API key found.');
 
   for(let i = 0; i < attempts.length; i++) {
