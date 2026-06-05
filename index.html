@@ -230,8 +230,8 @@ async function callGroq(system,user){
 }
 
 async function run(system,user){
-  try{return await callGroq(system,user);}
-  catch(e1){return await callClaude(system,user);}
+  try{return await callClaude(system,user);}
+  catch(e1){return await callGroq(system,user);}
 }
 
 function cleanOutput(text){
