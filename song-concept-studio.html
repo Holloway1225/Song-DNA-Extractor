@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Song Concept Studio">
+<title>✦ Song Concept Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inconsolata:wght@400;600;700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#06070d; --surface:rgba(255,255,255,.035); --border:rgba(168,85,247,.20);
+  --accent:#a855f7; --accent2:#7c3aed; --text:#eee9f7; --muted:#8b7aa6;
+  --gold:#fbbf24; --green:#34d399; --error:#f87171;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Lora',Georgia,serif;min-height:100vh;padding-bottom:env(safe-area-inset-bottom);overflow-x:hidden}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(90px)}
+.orb1{top:-15%;left:-15%;width:420px;height:420px;background:radial-gradient(circle,rgba(88,28,135,.32),transparent 70%)}
+.orb2{bottom:-22%;right:-18%;width:540px;height:540px;background:radial-gradient(circle,rgba(124,58,237,.22),transparent 70%)}
+.container{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:0 16px 80px}
+.header{text-align:center;padding:48px 20px 32px;border-bottom:1px solid var(--border)}
+.eyebrow{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:6px;color:var(--accent);text-transform:uppercase;margin-bottom:12px}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,8vw,3.2rem);font-weight:900;line-height:1.05;background:linear-gradient(135deg,#f0abfc,#c084fc,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header p{font-family:'Inconsolata',monospace;font-size:11px;letter-spacing:3px;color:var(--muted);margin-top:12px;text-transform:uppercase}
+.section-label{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:5px;color:var(--accent);text-transform:uppercase;margin:24px 0 8px}
+.panel{margin-top:28px;background:rgba(168,85,247,.055);border:1px solid rgba(168,85,247,.2);border-radius:14px;padding:18px}
+.api-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.api-label{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;min-width:82px}
+.api-label.primary{color:var(--accent)}
+input,textarea,select{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--border);border-radius:12px;padding:13px 15px;color:var(--text);font-family:'Inconsolata',monospace;font-size:13px;outline:none;-webkit-appearance:none}
+textarea{font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.65;resize:none;background:var(--surface)}
+textarea:focus,input:focus,select:focus{border-color:rgba(168,85,247,.65)}
+textarea::placeholder,input::placeholder{color:var(--muted);font-style:italic}
+.hint{font-family:'Inconsolata',monospace;font-size:10px;color:rgba(139,122,166,.85);letter-spacing:1px;line-height:1.6;margin-top:8px}
+.warning{font-family:'Inconsolata',monospace;font-size:10px;color:var(--gold);margin-top:8px;letter-spacing:1px;line-height:1.6;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:8px;padding:8px 10px}
+.saved{display:none;font-family:'Inconsolata',monospace;font-size:10px;color:var(--green);margin-top:6px;letter-spacing:1px}
+.save-btn{margin-top:12px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);border-radius:10px;padding:9px 16px;color:var(--accent);font-family:'Inconsolata',monospace;font-size:11px;letter-spacing:2px;cursor:pointer}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.generate-btn{width:100%;margin-top:28px;padding:18px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-family:'Inconsolata',monospace;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;cursor:pointer;box-shadow:0 0 30px rgba(168,85,247,.3)}
+.generate-btn:disabled{background:rgba(168,85,247,.2);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.status{font-family:'Inconsolata',monospace;font-size:12px;letter-spacing:2px;color:var(--accent);margin-top:18px;text-align:center;padding:14px;border:1px solid var(--border);border-radius:10px;background:var(--surface);display:none}
+.status.visible{display:block}.status.error{color:var(--error);border-color:rgba(248,113,113,.35)}
+.output-box{margin-top:28px;background:rgba(0,0,0,.32);border:1px solid rgba(124,77,255,.32);border-radius:16px;padding:20px;animation:fadeUp .35s ease both}
+.box-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px}
+.box-title{font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:5px;color:var(--accent);text-transform:uppercase}
+.copy-btn{padding:7px 16px;border-radius:999px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'Inconsolata',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;min-width:70px}
+.copy-btn.copied{color:#f0abfc;border-color:var(--accent)}
+.concept-text{font-size:15px;line-height:1.9;white-space:pre-wrap;color:var(--text)}
+.disclaimer{font-family:'Inconsolata',monospace;font-size:10px;color:var(--muted);line-height:1.6;margin-top:10px;letter-spacing:1px}
+.active-model{display:none;font-family:'Inconsolata',monospace;font-size:10px;letter-spacing:2px;margin-top:8px;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}.api-row{align-items:stretch;flex-direction:column}.api-label{min-width:auto}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div>
+<div class="container">
+  <div class="header">
+    <div class="eyebrow">✦ Song Concept Studio ✦</div>
+    <h1>Lyrics In.<br>Meaning Out.</h1>
+    <p>Fresh generator-ready concepts from existing songs</p>
+  </div>
+
+  <div class="panel">
+    <div class="section-label" style="margin-top:0">API Keys</div>
+    <div class="api-row">
+      <div class="api-label primary">ANTHROPIC</div>
+      <input type="password" id="api-anthropic" placeholder="sk-ant-..." aria-label="Anthropic API key">
+    </div>
+    <div class="api-row">
+      <div class="api-label">GROQ</div>
+      <input type="password" id="api-groq" placeholder="gsk_..." aria-label="Groq API key">
+    </div>
+    <div class="hint">Claude is used first when available. Groq is fallback.</div>
+    <div class="warning">⚠ For personal/private use only. Don’t publish API keys in a public GitHub repo.</div>
+    <button class="save-btn" id="save-keys-btn">Save Keys</button>
+    <div class="saved" id="api-saved">✓ Keys saved to this browser</div>
+    <div class="active-model" id="active-model"></div>
+  </div>
+
+  <div class="section-label">Paste Lyrics</div>
+  <textarea id="lyrics" rows="13" placeholder="Paste the lyrics here. The app will interpret the meaning without quoting or reusing the song's lines..."></textarea>
+
+  <button class="generate-btn" id="generate-btn">✦ Extract Emotional DNA</button>
+  <div class="status" id="status"></div>
+  <div id="output"></div>
+</div>
+
+<script>
+const CONFIG = {
+  GROQ_URL:'https://api.groq.com/openai/v1/chat/completions',
+  GROQ_MODEL:'llama-3.3-70b-versatile',
+  TIMEOUT_MS:60000
+};
+
+window.addEventListener('load', () => {
+  ['anthropic','groq'].forEach(k => {
+    const v = localStorage.getItem('concept_key_' + k);
+    if (v) document.getElementById('api-' + k).value = v;
+  });
+  if (localStorage.getItem('concept_key_anthropic') || localStorage.getItem('concept_key_groq')) {
+    document.getElementById('api-saved').style.display = 'block';
+  }
+});
+
+document.getElementById('save-keys-btn').addEventListener('click', () => {
+  ['anthropic','groq'].forEach(k => {
+    const v = document.getElementById('api-' + k).value.trim();
+    if (v) localStorage.setItem('concept_key_' + k, v);
+  });
+  document.getElementById('api-saved').style.display = 'block';
+});
+
+function getKey(k){ return document.getElementById('api-' + k)?.value.trim() || ''; }
+function setStatus(msg, err=false){
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status visible' + (err ? ' error' : '');
+}
+function clearStatus(){ document.getElementById('status').className = 'status'; }
+function showModel(msg){ const el=document.getElementById('active-model'); el.textContent=msg; el.style.display='block'; }
+function escapeHTML(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+function fetchWithTimeout(url, opts, ms){ return Promise.race([fetch(url,opts), new Promise((_,rej)=>setTimeout(()=>rej(new Error('Request timed out')),ms))]); }
+function copyText(text, btn){
+  const reset=()=>{btn.textContent='Copy';btn.classList.remove('copied');};
+  navigator.clipboard.writeText(text).then(()=>{btn.textContent='✓ Copied';btn.classList.add('copied');setTimeout(reset,1800);});
+}
+
+const SYSTEM_PROMPT = `You are an elite emotional-concept extraction engine for songwriters.
+
+Your job:
+Take existing song lyrics and extract the emotional DNA underneath them, then rebuild that DNA into a completely fresh concept prompt suitable for generating NEW lyrics.
+
+You are NOT summarizing the song.
+You are NOT reviewing the song.
+You are NOT explaining the lyrics academically.
+
+You ARE:
+- extracting emotional themes
+- identifying psychological conflict
+- preserving emotional weight
+- rebuilding imagery into new language
+- generating a fresh conceptual foundation for a NEW song
+
+ABSOLUTE RULES:
+1. Never quote the lyrics.
+2. Never reuse phrases, hooks, titles, rhyme patterns, or distinctive wording.
+3. Never paraphrase line-by-line.
+4. Do not mention the original lyrics.
+5. Output must feel original enough to inspire a completely new song.
+
+Your outputs should feel:
+- cinematic
+- emotionally precise
+- psychologically layered
+- visually concrete
+- generator-ready
+
+Avoid generic writing:
+- no “journey”
+- no “inner demons”
+- no “finding themselves”
+- no vague therapy language
+- no motivational tone
+
+Use physical imagery:
+rooms, weather, machinery, distance, objects, rituals, wounds, silence, static, movement, architecture, light, texture, bodies, routines, environments.
+
+The output should sound like a concept brief a great songwriter would WANT to write from.`;
+
+function buildPrompt(lyrics){
+  return `Extract the emotional DNA from these lyrics and transform it into a completely fresh generator-ready concept.
+
+The output should contain these sections:
+
+CORE CONCEPT:
+A concise explanation of the emotional and thematic engine underneath the song.
+
+EMOTIONAL CONFLICT:
+What the speaker wants versus what traps them.
+
+VISUAL WORLD:
+A vivid physical environment that embodies the song emotionally.
+
+SYMBOLIC LANGUAGE:
+Recurring objects, environments, textures, or imagery systems that could carry the song visually.
+
+SUBTEXT:
+What the song is secretly about underneath the literal surface.
+
+GENERATOR-READY CONCEPT:
+One final polished paragraph written like a high-end songwriting concept prompt someone could directly feed into a lyric generator.
+
+Critical rule:
+Do NOT reuse wording from the lyrics. Everything must be rebuilt into fresh language and imagery.
+
+LYRICS:
+${lyrics}`;
+}
+
+async function aiCall(systemPrompt, userPrompt){
+  const ak = getKey('anthropic'), gk = getKey('groq');
+
+  if (ak) {
+    try {
+      const res = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'x-api-key':ak,
+          'anthropic-version':'2023-06-01',
+          'anthropic-dangerous-direct-browser-access':'true'
+        },
+        body:JSON.stringify({
+          model:'claude-sonnet-4-6',
+          max_tokens:900,
+          temperature:.65,
+          system:systemPrompt,
+          messages:[{role:'user',content:userPrompt}]
+        })
+      }, CONFIG.TIMEOUT_MS);
+
+      if (res.ok) {
+        const d = await res.json();
+        showModel('✦ Using Claude Sonnet');
+        return d.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+      }
+
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || 'Anthropic error ' + res.status);
+    } catch(e) {
+      if (!gk) throw e;
+    }
+  }
+
+  if (gk) {
+    const res = await fetchWithTimeout(CONFIG.GROQ_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer ' + gk},
+      body:JSON.stringify({
+        model:CONFIG.GROQ_MODEL,
+        messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],
+        max_tokens:900,
+        temperature:.65,
+        top_p:.9
+      })
+    }, CONFIG.TIMEOUT_MS);
+
+    if (!res.ok) {
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err?.error?.message || 'Groq error ' + res.status);
+    }
+
+    const d = await res.json();
+    showModel('✦ Using Groq');
+    return d.choices[0].message.content.trim();
+  }
+
+  throw new Error('No API key — add Anthropic or Groq key first');
+}
+
+document.getElementById('generate-btn').addEventListener('click', async () => {
+  const lyrics = document.getElementById('lyrics').value.trim();
+  const btn = document.getElementById('generate-btn');
+
+  if (!getKey('anthropic') && !getKey('groq')) { setStatus('⚠ Add at least one API key first', true); return; }
+  if (!lyrics) { setStatus('⚠ Paste lyrics first', true); return; }
+
+  btn.disabled = true;
+  document.getElementById('output').innerHTML = '';
+  document.getElementById('active-model').style.display = 'none';
+  setStatus('Extracting emotional DNA and rebuilding it into a fresh concept...');
+
+  try {
+    const concept = await aiCall(SYSTEM_PROMPT, buildPrompt(lyrics));
+    clearStatus();
+
+    document.getElementById('output').innerHTML = `
+      <div class="output-box">
+        <div class="box-header">
+          <div class="box-title">✦ Generator-Ready Concept</div>
+          <button class="copy-btn" id="copy-concept">Copy</button>
+        </div>
+        <div class="concept-text">${escapeHTML(concept)}</div>
+        <div class="disclaimer">Meaning generated without quoting or reusing the lyrics.</div>
+      </div>`;
+
+    document.getElementById('copy-concept').addEventListener('click', function(){ copyText(concept, this); });
+  } catch(e) {
+    setStatus('⚠ ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
