@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Extractor · v1.5</title>
+<title>Concept Extractor · v1.6</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -85,14 +85,6 @@
   }
   .in:focus{border-color:var(--cyan-dim);}
   .in::placeholder{color:#2e3d4a;}
-
-  .toggle-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
-  .toggle-btn{
-    padding:8px 14px;border:1px solid var(--line);background:transparent;color:var(--muted);
-    font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;cursor:pointer;
-    transition:.15s;border-radius:7px;
-  }
-  .toggle-btn.active{border-color:var(--cyan-dim);background:var(--cyan-faint);color:var(--cyan);}
 
   button.go{
     width:100%;margin-top:16px;padding:15px;border:none;border-radius:10px;cursor:pointer;
@@ -204,14 +196,14 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Song Concept · Signal Tools · v1.5</div>
+    <div class="kicker">Song Concept · Signal Tools · v1.6</div>
     <h1><span class="glitch" data-t="CONCEPT EXTRACTOR">CONCEPT EXTRACTOR</span></h1>
-    <p class="sub">Paste lyrics → get one <b>vivid, generator-ready concept</b> you can drop straight into your lyric generator.</p>
+    <p class="sub">Paste lyrics → get back <b>what the song is actually about</b>, in fresh words. No copying, no rewriting — a faithful read of the song's situation and wound.</p>
   </header>
 
   <div class="card">
     <div class="card-label">
-      <span>Original Lyrics</span>
+      <span>Song Lyrics</span>
       <span class="char-count" id="lyricCount">0 words</span>
     </div>
     <textarea id="lyrics" placeholder="Paste full lyrics here…"></textarea>
@@ -221,16 +213,7 @@
       <input id="artistRef" class="in" type="text" placeholder="Artist / source (optional)" />
     </div>
 
-    <div class="card-label" style="margin-top:14px;">Avoid these patterns (already overused)</div>
-    <div class="toggle-group" id="avoid-group">
-      <button class="toggle-btn" data-value="mirrors, reflections, or glass surfaces">Mirrors / reflections</button>
-      <button class="toggle-btn" data-value="a frozen or motionless body as the central posture">Frozen stillness</button>
-      <button class="toggle-btn" data-value="locked or unlocked doors, keys, or exits as the central metaphor">Doors / keys / locks</button>
-      <button class="toggle-btn" data-value="performing calm while feeling something else underneath">Performed calm</button>
-    </div>
-    <textarea id="customAvoid" rows="2" placeholder="Anything else to avoid (optional) — e.g. 'no parked cars, no journals'" style="margin-top:8px;min-height:50px;"></textarea>
-
-    <button class="go" id="go">Extract concept</button>
+    <button class="go" id="go">Read the song</button>
 
     <div class="status-row">
       <div class="spinner" id="spinner"></div>
@@ -243,11 +226,11 @@
   <details class="crit">
     <summary>How it works</summary>
     <div class="crit-body">
-      The extractor runs in two passes.<br><br>
-      <b>Pass 1 — Structure read:</b> identifies the source song's actual situation — the setting, the speaker's physical posture, the central object or action, and the core contradiction. This is shown to you so you can see what the tool is reading from.<br><br>
-      <b>Pass 2 — New concept:</b> builds a fresh, generator-ready concept that carries the same emotional logic but in a <b>different setting, posture, and object</b> than the source — and different from whatever you've flagged as overused above. It does not summarize or quote the original.<br><br>
+      The reader runs in two passes.<br><br>
+      <b>Pass 1 — Structure read:</b> identifies the song's actual situation — the setting, the speaker's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
+      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the lyrics, never reuses the song's phrasing or hooks, and does not invent a different scene. It tells you what the song you pasted is saying.<br><br>
       Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
-      <div class="ex">"A person has already walked out but keeps standing at the curb with their keys in hand because nobody inside will admit what happened. The rooms behind them are still lit. The damage has been cleaned up just enough to look normal from the window. The new song should explore the strange punishment of leaving before being believed."</div>
+      <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
     </div>
   </details>
 
@@ -259,7 +242,7 @@
     </div>
   </div>
 
-  <footer>Version 1.5 · Stay tuned.</footer>
+  <footer>Version 1.6 · Stay tuned.</footer>
 </div>
 
 <script>
@@ -272,17 +255,6 @@ const $ = id => document.getElementById(id);
   el.addEventListener('input', () => { try { localStorage.setItem('cs_ce_'+k, el.value); } catch(e){} });
 });
 
-// ── Avoid toggle group (multi-select) ──
-document.querySelectorAll('#avoid-group .toggle-btn').forEach(b => {
-  b.addEventListener('click', () => b.classList.toggle('active'));
-});
-function getAvoidList() {
-  const picked = Array.from(document.querySelectorAll('#avoid-group .toggle-btn.active')).map(b => b.dataset.value);
-  const custom = $('customAvoid').value.trim();
-  if(custom) picked.push(custom);
-  return picked;
-}
-
 // ── Live word count on lyrics input ──
 $('lyrics').addEventListener('input', () => {
   const words = $('lyrics').value.trim().split(/\s+/).filter(Boolean).length;
@@ -293,13 +265,15 @@ $('lyrics').addEventListener('input', () => {
 const history = [];
 
 // ── PASS 1: Structure extraction ──
-const STRUCTURE_SYSTEM = `You read song lyrics and extract their underlying STRUCTURE — not their meaning, their shape.
+const STRUCTURE_SYSTEM = `You read song lyrics and extract their underlying STRUCTURE — the actual situation in the song.
 
 Identify exactly these four things from the lyrics:
-1. SETTING: Where is the speaker, physically? One short phrase. Be specific (e.g. "a parked car at night", "a kitchen during a phone call", "a hospital corridor").
-2. POSTURE: What is the speaker's body doing — are they still, moving, working, lying down, walking? One short phrase.
-3. CENTRAL OBJECT OR ACTION: The one physical object or repeated action the song returns to. One short phrase.
-4. CORE CONTRADICTION: The single tension driving the song — what the speaker wants vs. what they're actually doing, or what they believe vs. what's true. One sentence.
+1. SETTING: Where is the speaker, physically, or what is the song's central scene? One short phrase. Be specific.
+2. POSTURE: What is the speaker's body or stance doing — still, moving, declaring, pleading, working? One short phrase.
+3. CENTRAL OBJECT OR ACTION: The one object, image, or repeated action the song returns to. One short phrase.
+4. CORE CONTRADICTION OR TENSION: The single tension driving the song — what the speaker wants vs. what's happening, or what they believe vs. what's true. If the song has no real tension (e.g. a straightforward declaration), state its central claim instead. One sentence.
+
+Read the song as it actually is. Do not invert it, subvert it, or impose a meaning it does not have.
 
 Return ONLY valid JSON, no markdown, no preamble:
 {"setting":"...","posture":"...","object":"...","contradiction":"..."}`;
@@ -312,58 +286,31 @@ function buildStructurePrompt(lyrics, title, source) {
   return parts.join('\n');
 }
 
-// ── PASS 2: Concept generation ──
-const CONCEPT_SYSTEM_BASE = `You extract a usable song concept from existing lyrics.
+// ── PASS 2: "What this song is about" reader ──
+const CONCEPT_SYSTEM = `You read song lyrics and explain what the song is about, in your own fresh words.
 
-TASK: Using the structural read of the source song provided to you, build ONE fresh, generator-ready concept paragraph for a NEW song that carries the same emotional logic — but lives in a DIFFERENT setting, posture, and central object than the source.
+TASK: Using the lyrics and the structural read provided, write ONE paragraph that describes what THIS song is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
 
 HARD RULES:
+- Describe the song that was given to you. Do NOT invent a different scene, a different setting, or a different speaker. Stay true to what the song actually says.
+- Do NOT invert, subvert, or flip the song's meaning. If the song is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
 - Output exactly ONE paragraph, 85–135 words.
 - No headings. No bullets. No numbered lists.
-- Never quote the original lyrics.
-- Never reuse distinctive phrases, hooks, or titles from the original.
-- Never copy rhyme patterns or memorable phrasing.
-- Do not describe or reference the original song.
-- Do not use abstract emotional labels. Say what is happening, not what it means.
-- Start with a concrete human situation: "A person…" / "Someone…" / "A speaker…"
-- Include: the specific wound, the contradiction keeping them stuck, one vivid physical detail grounded in the real world, and what the new song should explore.
-- The output must feel like a fresh song idea, not an analysis or report.
-- CRITICAL: The new concept's setting, physical posture, and central object/action MUST be different from the source song's setting, posture, and object as identified in the structural read. Carry the EMOTIONAL LOGIC forward, not the physical scene.
+- NEVER quote the lyrics. Not a single phrase, line, hook, or title.
+- NEVER reuse the song's distinctive wording, images, or rhymes verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly in the song — e.g. "a celebration," "a journey," "a storm" — but never in the song's own phrasing.)
+- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening in the song and what it means.
+- Start naturally: "This song is about…" or "The song follows…" or "At its center, this song…"
+- Cover: the situation/scene, the central wound or driving feeling, and the core tension or claim.
 
-BANNED PATTERNS — do not produce any of the following:
-- Direct abstract labels: "toxic relationship", "emotional conflict", "need for closure", "fear of the unknown", "deep-seated pain", "validation", "healing", "autonomy", "inner demons", "emotional journey", "broken pieces", "spark of defiance"
-- Generic resolution arcs: "break free", "find themselves", "overcome the darkness", "uncertain freedom"
-- Vague trapping language: "suffocating grip", "trapped in a relationship", "chains that bind", "darkness closes in"
-- Abstract emotion dressed as physical image: "the weight of unspoken words", "the fog of grief", "a storm inside", "the ache of absence", "silence pressing down", "the air thick with tension", "suspended between past and future", "pulled in two directions"
-- Psychological summary disguised as scene: "they're forced to confront", "they must reckon with", "they carry the burden of", "grappling with", "the question of who they are"
-- Coffee / café imagery: coffee, cup, mug, café, espresso, grounds, brewing, pour-over — banned entirely
-- A.M. / morning imagery: 3am, 4am, dawn, sunrise, morning light, first light, the hour before — banned entirely
-- "not X, not X, just X" sentence constructions and all variations of that triple-clause pattern — banned entirely
-
-THE CORE FAILURE MODE TO AVOID:
-Lifting an image from the lyrics (smoke, a room, a door) and wrapping it in emotional abstraction ("the weight of unspoken words", "the uncertainty of their future"). This looks concrete but is still generic. A real physical detail means: a specific object, a specific action, a specific moment — not a symbolic atmosphere.
-
-BAD: "the air clings to their skin, heavy with the weight of unspoken words"
-GOOD: "they have already packed the car but keep walking back inside to check that the windows are locked"
-
-BAD: "suspended between the hurt of their past and the uncertainty of their future"
-GOOD: "the only thing left to settle is whether the other person will ever say it happened"
-
-QUALITY GATE: If the paragraph could describe 500 different songs, it failed. If it gives a lyric writer a specific scene, a specific wound, and a specific contradiction that could only fit this song — AND that scene is physically distinct from the source's setting, posture, and object — it passed.`;
-
-function buildConceptSystem(avoidList) {
-  if(!avoidList.length) return CONCEPT_SYSTEM_BASE;
-  const avoidText = avoidList.map(a => `- ${a}`).join('\n');
-  return CONCEPT_SYSTEM_BASE + `\n\nADDITIONAL CONSTRAINT — the writer has flagged these as overused in their recent work. The new concept's setting, posture, and central object must NOT involve any of the following, even if the source song does:\n${avoidText}`;
-}
+QUALITY GATE: A reader who has never heard this song should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its words. If your paragraph would fit a different song equally well, it failed. If it could only describe this song, it passed.`;
 
 function buildConceptPrompt(lyrics, title, source, structure) {
   const parts = [];
   if(title) parts.push(`Title: ${title}`);
   if(source) parts.push(`Artist/source: ${source}`);
-  parts.push(`\nSTRUCTURAL READ OF SOURCE (do not reuse this setting/posture/object):\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore contradiction: ${structure.contradiction}`);
-  parts.push(`\nLyrics (for emotional context only — do not quote or reuse imagery):\n${lyrics}`);
-  parts.push(`\nOutput one concept paragraph only. No preamble. No label. Just the paragraph.`);
+  parts.push(`\nSTRUCTURAL READ OF THE SONG:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
+  parts.push(`\nLyrics (read these closely — describe what they are about, but never quote or reuse their wording):\n${lyrics}`);
+  parts.push(`\nWrite one paragraph describing what this song is about. No preamble. No label. Just the paragraph.`);
   return parts.join('\n');
 }
 
@@ -382,7 +329,7 @@ async function callGroq(system, user, maxTokens=400) {
     headers: { "Content-Type":"application/json","Authorization":"Bearer "+key },
     body: JSON.stringify({
       model: "llama-3.3-70b-versatile",
-      temperature: 0.42,
+      temperature: 0.4,
       max_tokens: maxTokens,
       messages: [{ role:"system", content:system },{ role:"user", content:user }]
     })
@@ -405,7 +352,7 @@ async function callClaude(system, user, maxTokens=400) {
     body: JSON.stringify({
       model: "claude-sonnet-4-6",
       max_tokens: maxTokens,
-      temperature: 0.42,
+      temperature: 0.4,
       system,
       messages: [{ role:"user", content:user }]
     })
@@ -414,27 +361,30 @@ async function callClaude(system, user, maxTokens=400) {
   return parseText(await res.json());
 }
 
-async function runWithRetry(system, user, maxTokens=400) {
+async function runWithRetry(system, user, maxTokens=400, stageLabel='') {
   const attempts = [];
-  if($('anthropicKey').value.trim()) attempts.push(() => callClaude(system, user, maxTokens));
-  if($('groqKey').value.trim()) attempts.push(() => callGroq(system, user, maxTokens));
+  if($('anthropicKey').value.trim()) attempts.push(['Claude', () => callClaude(system, user, maxTokens)]);
+  if($('groqKey').value.trim()) attempts.push(['Groq', () => callGroq(system, user, maxTokens)]);
   if(!attempts.length) throw new Error('No API key found.');
 
+  let lastErr;
   for(let i = 0; i < attempts.length; i++) {
     try {
-      return await attempts[i]();
+      return await attempts[i][1]();
     } catch(e) {
-      if(i === attempts.length - 1) throw e;
-      setStatus(`${i === 0 ? 'Primary failed, trying fallback…' : 'Retrying…'}`, '');
+      lastErr = e;
+      if(i === attempts.length - 1) break;
+      setStatus(`${attempts[i][0]} failed${stageLabel ? ' ('+stageLabel+')' : ''} — trying ${attempts[i+1][0]}…`, 'warn');
       await new Promise(r => setTimeout(r, 600));
     }
   }
+  throw lastErr;
 }
 
 function cleanOutput(text) {
   return text
     .replace(/^["'""„]+|["'""]+$/g, '')
-    .replace(/^(GENERATOR-READY CONCEPT|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
+    .replace(/^(WHAT THIS SONG IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
     .trim();
 }
 
@@ -459,7 +409,7 @@ function setSpinner(on) {
   $('spinner').classList.toggle('active', on);
 }
 
-function copyText(text, btn, label='Copy concept') {
+function copyText(text, btn, label='Copy summary') {
   navigator.clipboard.writeText(text).then(() => {
     btn.textContent = 'Copied ✓';
     setTimeout(() => btn.textContent = label, 2200);
@@ -478,7 +428,7 @@ function renderResults() {
   if(history.length > 1) {
     const divider = document.createElement('div');
     divider.className = 'hist-label';
-    divider.textContent = 'Previous extractions this session';
+    divider.textContent = 'Previous reads this session';
     box.appendChild(divider);
 
     for(let i = history.length - 2; i >= 0; i--) {
@@ -496,23 +446,23 @@ function buildResultEl(entry, old) {
 
   const structureHTML = entry.structure ? `
     <div class="structure-box">
-      <span class="lab">Source structure read</span>
+      <span class="lab">Structure read</span>
       Setting: ${entry.structure.setting || '—'}<br>
       Posture: ${entry.structure.posture || '—'}<br>
       Central object/action: ${entry.structure.object || '—'}<br>
-      Core contradiction: ${entry.structure.contradiction || '—'}
+      Core tension/claim: ${entry.structure.contradiction || '—'}
     </div>` : '';
 
   el.innerHTML = `
     <div class="r-head">
-      <span class="r-label">${old ? 'Previous extraction' : 'Generator-ready concept'}</span>
+      <span class="r-label">${old ? 'Previous read' : 'What this song is about'}</span>
       <div class="r-meta">${entry.title ? `<span>${entry.title}</span><br>` : ''}${entry.ts}</div>
     </div>
-    ${!old ? structureHTML : ''}
+    ${structureHTML}
     <div class="concept-box"></div>
     <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
     <div class="btnrow">
-      <button class="mini copy-btn">Copy concept</button>
+      <button class="mini copy-btn">Copy summary</button>
       ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
     </div>`;
 
@@ -531,7 +481,6 @@ $('go').addEventListener('click', async () => {
   const lyrics = $('lyrics').value.trim();
   const title = $('songTitle').value.trim();
   const source = $('artistRef').value.trim();
-  const avoidList = getAvoidList();
 
   if(!lyrics) { setStatus('Paste lyrics first.','err'); return; }
   if(!$('groqKey').value.trim() && !$('anthropicKey').value.trim()) {
@@ -542,16 +491,22 @@ $('go').addEventListener('click', async () => {
   setSpinner(true);
   setStatus('Reading the song\'s structure…', '');
 
+  let stage = 'structure read';
   try {
     // Pass 1: structure
-    const rawStructure = await runWithRetry(STRUCTURE_SYSTEM, buildStructurePrompt(lyrics, title, source), 250);
-    const structure = parseStructure(rawStructure);
+    const rawStructure = await runWithRetry(STRUCTURE_SYSTEM, buildStructurePrompt(lyrics, title, source), 250, 'structure read');
+    let structure;
+    try {
+      structure = parseStructure(rawStructure);
+    } catch(parseErr) {
+      throw new Error('Could not read the structure JSON. The model returned something unexpected — try again.');
+    }
 
-    setStatus('Building a concept that breaks the pattern…', '');
+    stage = 'summary';
+    setStatus('Writing what the song is about…', '');
 
-    // Pass 2: concept (informed by structure + avoid list)
-    const conceptSystem = buildConceptSystem(avoidList);
-    const rawConcept = await runWithRetry(conceptSystem, buildConceptPrompt(lyrics, title, source, structure), 400);
+    // Pass 2: what it's about
+    const rawConcept = await runWithRetry(CONCEPT_SYSTEM, buildConceptPrompt(lyrics, title, source, structure), 400, 'summary');
     const concept = cleanOutput(rawConcept);
 
     const now = new Date();
@@ -566,7 +521,7 @@ $('go').addEventListener('click', async () => {
     renderResults();
     setStatus('', '');
   } catch(e) {
-    setStatus('Failed — check your API key or try again.', 'err');
+    setStatus(`Failed at ${stage}: ${e.message || 'unknown error'}`, 'err');
   }
 
   setSpinner(false);
