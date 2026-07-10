@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Extractor · v1.6</title>
+<title>Concept Extractor · v1.7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -155,12 +155,20 @@
   }
   .mini:hover{border-color:var(--cyan-dim);color:var(--cyan);}
   .mini.danger:hover{border-color:var(--red);color:var(--red);}
+  .mini.accent{border-color:var(--cyan-dim);color:var(--cyan);}
+  .mini.accent:hover{box-shadow:0 0 14px rgba(57,230,224,0.25);}
+  .mini:disabled{opacity:.4;cursor:not-allowed;}
 
   .hist-label{
     font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted2);
     text-align:center;margin-top:22px;padding-bottom:6px;
     border-bottom:1px solid var(--line);
   }
+
+  .orig-block{
+    margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-bright);
+  }
+  .orig-block .r-label{color:var(--amber);}
 
   details.crit{margin-top:24px;border:1px solid var(--line);border-radius:10px;background:var(--panel);}
   summary{cursor:pointer;padding:13px 16px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);list-style:none;}
@@ -196,9 +204,9 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Song Concept · Signal Tools · v1.6</div>
+    <div class="kicker">Song Concept · Signal Tools · v1.7</div>
     <h1><span class="glitch" data-t="CONCEPT EXTRACTOR">CONCEPT EXTRACTOR</span></h1>
-    <p class="sub">Paste lyrics → get back <b>what the song is actually about</b>, in fresh words. No copying, no rewriting — a faithful read of the song's situation and wound.</p>
+    <p class="sub">Paste lyrics → get back <b>what the song is actually about</b>, in fresh words. Then generate an <b>original concept</b> that matches its emotional architecture without copying its scene, images, or wording.</p>
   </header>
 
   <div class="card">
@@ -229,7 +237,8 @@
       The reader runs in two passes.<br><br>
       <b>Pass 1 — Structure read:</b> identifies the song's actual situation — the setting, the speaker's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
       <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the lyrics, never reuses the song's phrasing or hooks, and does not invent a different scene. It tells you what the song you pasted is saying.<br><br>
-      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
+      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.<br><br>
+      <b>Pass 3 — Generate original concept (optional):</b> click "Generate original concept" on any read to get a brand-new song idea that matches the reference's emotional architecture — the shape of its tension and the type of wound underneath — but with a completely different setting, central object, and posture. It won't reuse the reference's scene, images, or phrasing, and it won't name the reference. This is a starting point for Truth Discovery in Lyrics Studio, not a rewrite of the source.
       <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
     </div>
   </details>
@@ -242,7 +251,7 @@
     </div>
   </div>
 
-  <footer>Version 1.6 · Stay tuned.</footer>
+  <footer>Version 1.7 · Stay tuned.</footer>
 </div>
 
 <script>
@@ -318,6 +327,63 @@ function buildConceptPrompt(lyrics, title, source, structure) {
   parts.push(`\nLyrics (read these closely — describe what they are about, but never quote or reuse their wording):\n${lyrics}`);
   parts.push(`\nWrite one paragraph describing what this song is about. No preamble. No label. Just the paragraph.`);
   return parts.join('\n');
+}
+
+// ── PASS 3: Original concept generator (matches architecture, not the song) ──
+const GENERATE_SYSTEM = `You take a structural read of a REFERENCE song and invent a NEW, ORIGINAL song concept that shares its emotional architecture but is a genuinely different song.
+
+"Emotional architecture" means: the shape of the core tension (what's wanted vs. what's true), the type of wound underneath it, and the general dramatic movement (declaration, unraveling, reckoning, etc). It does NOT mean the reference song's specific content.
+
+HARD RULES:
+- Invent a new setting, a new central object/action, and a new posture. None of them may resemble the reference's — not the same scene type, not a close cousin of it, not a reskin (e.g. if the reference is a kitchen-light confession, do not give me a bathroom-mirror confession).
+- Do not reuse any phrase, image, hook, or title fragment from the reference, even loosely paraphrased.
+- Do not name, describe, or allude to the reference song or artist.
+- The new concept should feel like it could become its own song with its own lyrics, not a variation or cover concept.
+- Preserve only the underlying tension type and wound category — e.g. "claiming freedom out loud while the body hasn't caught up" or "being loved conditionally and mistaking it for being chosen" — translated into completely different circumstances.
+
+OUTPUT: Return ONLY valid JSON, no markdown, no preamble:
+{"setting":"...","posture":"...","object":"...","contradiction":"...","concept":"..."}
+
+Where setting/posture/object/contradiction mirror the structural-read format (short phrases, one sentence for contradiction), and "concept" is ONE paragraph, 85–135 words, written in the same "This song is about…" style, describing the new original song — its situation, its wound, and its central tension or claim. No headings, no bullets, no quoting anything.`;
+
+function buildGeneratePrompt(structure, concept, title) {
+  const parts = [];
+  parts.push(`REFERENCE SONG — STRUCTURAL READ (for architecture only, do not reuse its content):`);
+  parts.push(`Setting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
+  parts.push(`\nWhat the reference song is about (for tension/wound type only, do not reuse its content):\n${concept}`);
+  parts.push(`\nNow invent a fully original song concept that matches this song's emotional architecture but is its own song, per the rules. Return only the JSON.`);
+  return parts.join('\n');
+}
+
+async function generateOriginal(entry, btn) {
+  if(!$('groqKey').value.trim() && !$('anthropicKey').value.trim()) {
+    setStatus('Add a Groq or Anthropic key below.','err'); return;
+  }
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generating…';
+  setSpinner(true);
+  setStatus('Generating an original matching concept…', '');
+  try {
+    const raw = await runWithRetry(GENERATE_SYSTEM, buildGeneratePrompt(entry.structure, entry.concept, entry.title), 450, 'original concept');
+    const parsed = parseStructure(raw);
+    entry.original = {
+      concept: cleanOutput(parsed.concept || ''),
+      structure: {
+        setting: parsed.setting || '',
+        posture: parsed.posture || '',
+        object: parsed.object || '',
+        contradiction: parsed.contradiction || ''
+      }
+    };
+    renderResults();
+    setStatus('', '');
+  } catch(e) {
+    setStatus(`Failed to generate original concept: ${e.message || 'unknown error'}`, 'err');
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+  setSpinner(false);
 }
 
 // ── API calls ──
@@ -459,6 +525,30 @@ function buildResultEl(entry, old) {
       Core tension/claim: ${entry.structure.contradiction || '—'}
     </div>` : '';
 
+  let origHTML = '';
+  if(entry.original) {
+    const owc = wordCount(entry.original.concept);
+    const oInRange = owc >= 85 && owc <= 135;
+    origHTML = `
+      <div class="orig-block">
+        <div class="r-head">
+          <span class="r-label">Original concept · matching architecture</span>
+        </div>
+        <div class="structure-box">
+          <span class="lab">New structure</span>
+          Setting: ${entry.original.structure.setting || '—'}<br>
+          Posture: ${entry.original.structure.posture || '—'}<br>
+          Central object/action: ${entry.original.structure.object || '—'}<br>
+          Core tension/claim: ${entry.original.structure.contradiction || '—'}
+        </div>
+        <div class="concept-box orig-concept-box"></div>
+        <span class="word-badge ${oInRange ? '' : 'warn'}">${owc} words${oInRange ? '' : ' — outside target'}</span>
+        <div class="btnrow">
+          <button class="mini copy-orig-btn">Copy concept</button>
+        </div>
+      </div>`;
+  }
+
   el.innerHTML = `
     <div class="r-head">
       <span class="r-label">${old ? 'Previous read' : 'What this song is about'}</span>
@@ -469,8 +559,10 @@ function buildResultEl(entry, old) {
     <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
     <div class="btnrow">
       <button class="mini copy-btn">Copy summary</button>
+      ${!entry.original ? `<button class="mini accent generate-btn">Generate original concept</button>` : ''}
       ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
-    </div>`;
+    </div>
+    ${origHTML}`;
 
   el.querySelector('.concept-box').textContent = entry.concept;
   el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.concept, ev.target));
@@ -479,6 +571,13 @@ function buildResultEl(entry, old) {
       history.pop();
       renderResults();
     });
+  }
+  const genBtn = el.querySelector('.generate-btn');
+  if(genBtn) genBtn.addEventListener('click', () => generateOriginal(entry, genBtn));
+
+  if(entry.original) {
+    el.querySelector('.orig-concept-box').textContent = entry.original.concept;
+    el.querySelector('.copy-orig-btn').addEventListener('click', ev => copyText(entry.original.concept, ev.target, 'Copy concept'));
   }
   return el;
 }
