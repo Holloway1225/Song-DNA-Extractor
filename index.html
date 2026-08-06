@@ -553,10 +553,29 @@ function setSpinner(on) {
 }
 
 function copyText(text, btn, label='Copy summary') {
-  navigator.clipboard.writeText(text).then(() => {
+  const done = () => {
     btn.textContent = 'Copied ✓';
     setTimeout(() => btn.textContent = label, 2200);
-  });
+  };
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      done();
+    } catch(_) {
+      setStatus('Copy failed — select the text above and copy it manually.', 'err');
+    }
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
+  }
 }
 
 // ── Unison handoff to Prompt Forge ──
@@ -565,7 +584,36 @@ function copyText(text, btn, label='Copy summary') {
 // Prompt Forge reads ?theme= on load and drops it straight into its theme field.
 function openInPromptForge(sceneText) {
   const url = 'prompt-forge.html?theme=' + encodeURIComponent(sceneText);
-  window.open(url, '_blank');
+  const win = window.open(url, '_blank');
+  // If the sibling file isn't deployed alongside this one yet (e.g. testing
+  // from a single downloaded file or a preview sandbox), window.open either
+  // throws, returns null, or silently opens a dead tab. Either way, fall
+  // back to putting the scene on the clipboard so the trip isn't wasted.
+  if (!win) {
+    copyTextRaw(sceneText, () => {
+      setStatus('Could not open Prompt Forge directly — scene copied instead. Make sure both files are deployed in the same folder, then paste it in.', 'warn');
+    });
+  }
+}
+
+function copyTextRaw(text, onDone) {
+  const fallback = () => {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      onDone();
+    } catch(_) {}
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(onDone).catch(fallback);
+  } else {
+    fallback();
+  }
 }
 
 function renderResults() {
