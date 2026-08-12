@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Extractor · v1.7</title>
+<title>Concept Reader · v2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -54,9 +54,18 @@
   .sub{color:var(--muted);font-size:11px;margin-top:14px;letter-spacing:.07em;line-height:1.6;}
   .sub b{color:var(--text);}
 
+  .type-row{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;justify-content:center;}
+  .type-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 16px;border-radius:8px;cursor:pointer;transition:.15s;
+  }
+  .type-btn:hover{border-color:var(--cyan-dim);color:var(--text);}
+  .type-btn.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-faint);box-shadow:0 0 14px rgba(57,230,224,0.18);}
+
   .card{
     background:linear-gradient(170deg,var(--panel) 0%,var(--panel-2) 100%);
-    border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:24px;
+    border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:20px;
     position:relative;overflow:hidden;
   }
   .card::before{
@@ -123,14 +132,13 @@
     position:relative;
   }
   .result.old{border-left-color:var(--muted2);opacity:.72;}
-  .result.pending{border-left-color:var(--amber);}
   @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
   .r-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
   .r-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);}
   .result.old .r-label{color:var(--muted);}
-  .result.pending .r-label{color:var(--amber);}
   .r-meta{font-size:10px;color:var(--muted2);text-align:right;line-height:1.5;}
+  .r-type{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:4px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;border:1px solid var(--line-bright);color:var(--muted);}
 
   .structure-box{
     background:#0a0e13;border:1px dashed var(--line-bright);border-radius:10px;
@@ -144,13 +152,6 @@
     padding:15px 16px;font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;
   }
   .result.old .concept-box{color:var(--muted);}
-
-  .scene-box{
-    background:#05070a;border:1px solid var(--cyan-dim);border-radius:10px;
-    padding:15px 16px;font-size:13.5px;line-height:1.8;color:var(--white);white-space:pre-wrap;
-    margin-top:10px;box-shadow:0 0 18px rgba(57,230,224,0.08) inset;
-  }
-  .scene-lab{color:var(--cyan);letter-spacing:.2em;font-size:9px;text-transform:uppercase;display:block;margin-bottom:8px;}
 
   .word-badge{
     display:inline-block;margin-top:8px;padding:3px 9px;border-radius:5px;
@@ -167,10 +168,6 @@
   }
   .mini:hover{border-color:var(--cyan-dim);color:var(--cyan);}
   .mini.danger:hover{border-color:var(--red);color:var(--red);}
-  .mini.accent{border-color:var(--cyan-dim);color:var(--cyan);}
-  .mini.accent:hover{box-shadow:0 0 14px rgba(57,230,224,0.25);}
-  .mini.forge{border-color:var(--amber);color:var(--amber);}
-  .mini.forge:hover{box-shadow:0 0 14px rgba(240,168,58,0.25);}
   .mini:disabled{opacity:.4;cursor:not-allowed;}
 
   .hist-label{
@@ -178,11 +175,6 @@
     text-align:center;margin-top:22px;padding-bottom:6px;
     border-bottom:1px solid var(--line);
   }
-
-  .orig-block{
-    margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-bright);
-  }
-  .orig-block .r-label{color:var(--amber);}
 
   details.crit{margin-top:24px;border:1px solid var(--line);border-radius:10px;background:var(--panel);}
   summary{cursor:pointer;padding:13px 16px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);list-style:none;}
@@ -218,30 +210,32 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Song Concept · Signal Tools · v1.8</div>
-    <h1><span class="glitch" data-t="CONCEPT EXTRACTOR">CONCEPT EXTRACTOR</span></h1>
-    <p class="sub">Paste lyrics → get back <b>what the song is actually about</b>, in fresh words. Then generate an <b>original concept</b> that matches its emotional architecture without copying its scene, images, or wording — anchored to one concrete scene, ready to hand straight to Prompt Forge.</p>
+    <div class="kicker">Signal Tools · v2.0</div>
+    <h1><span class="glitch" data-t="CONCEPT READER">CONCEPT READER</span></h1>
+    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back <b>what it's actually about</b>, in fresh words — its structure, its wound, and the tension underneath it.</p>
   </header>
+
+  <div class="type-row" id="typeRow"></div>
 
   <div class="card">
     <div class="card-label">
-      <span>Song Lyrics</span>
+      <span id="unitLabel">Source Text</span>
       <span class="char-count" id="lyricCount">0 words</span>
     </div>
-    <textarea id="lyrics" placeholder="Paste full lyrics here…"></textarea>
+    <textarea id="lyrics" placeholder=""></textarea>
 
     <div class="grid2">
-      <input id="songTitle" class="in" type="text" placeholder="Song title (optional)" />
-      <input id="artistRef" class="in" type="text" placeholder="Artist / source (optional)" />
+      <input id="songTitle" class="in" type="text" placeholder="" />
+      <input id="artistRef" class="in" type="text" placeholder="" />
     </div>
 
-    <button class="go" id="go">Read the song</button>
+    <button class="go" id="go">Read it</button>
 
     <div class="status-row">
       <div class="spinner" id="spinner"></div>
       <div class="status" id="status"></div>
     </div>
-    <div class="draft-note" id="draft-note">◈ Lyrics auto-saved — a timeout won't lose them.</div>
+    <div class="draft-note" id="draft-note">◈ Text auto-saved — a timeout won't lose it.</div>
   </div>
 
   <div class="results" id="results"></div>
@@ -249,12 +243,10 @@
   <details class="crit">
     <summary>How it works</summary>
     <div class="crit-body">
-      The reader runs in two passes, plus an optional third.<br><br>
-      <b>Pass 1 — Structure read:</b> identifies the song's actual situation — the setting, the speaker's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
-      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the lyrics, never reuses the song's phrasing or hooks, and does not invent a different scene. It tells you what the song you pasted is saying.<br><br>
-      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.<br><br>
-      <b>Pass 3 — Generate original concept (optional):</b> click "Generate original concept" on any read to get a brand-new song idea that matches the reference's emotional architecture — the shape of its tension and the type of wound underneath — but with a completely different setting, central object, and posture. It won't reuse the reference's scene, images, or phrasing, and it won't name the reference.<br><br>
-      Alongside the concept paragraph, Pass 3 also outputs a single-sentence <b>scene line</b> — one concrete place, one body, one involuntary gesture. Testing across Prompt Forge showed that a raw scene like this consistently beats a conceptual paragraph as the input to a lyric-writing prompt, so the scene line is what's meant to travel forward — hit "Open in Prompt Forge" and it lands directly in that tool's theme field, ready to generate.
+      Pick what kind of material you're pasting — song, movie, TV show, or book — then run it through two passes.<br><br>
+      <b>Pass 1 — Structure read:</b> identifies the actual situation — the setting, the central body's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
+      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song, movie, show, or book is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the source material, never reuses its distinctive lines or phrasing, and does not invent a different scene. It tells you what the thing you pasted is actually saying.<br><br>
+      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
       <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
     </div>
   </details>
@@ -267,22 +259,84 @@
     </div>
   </div>
 
-  <footer>Version 1.8 · Scene-anchored + Prompt Forge unison · 2026-08-05</footer>
+  <footer>Version 2.0 · Song / Movie / Show / Book · 2026-08-11</footer>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
 const REQUEST_TIMEOUT_MS = 45000;
 
+// ── Media types ──
+const MEDIA = {
+  song: {
+    label: 'Song',
+    thing: 'song',
+    unitLabel: 'Song Lyrics',
+    placeholder: 'Paste full lyrics here…',
+    quoteUnit: 'lyrics',
+    titlePh: 'Song title (optional)',
+    srcPh: 'Artist / source (optional)'
+  },
+  movie: {
+    label: 'Movie',
+    thing: 'movie',
+    unitLabel: 'Scene / Synopsis / Excerpt',
+    placeholder: 'Paste a scene description, plot synopsis, or dialogue excerpt…',
+    quoteUnit: 'dialogue or narration',
+    titlePh: 'Movie title (optional)',
+    srcPh: 'Director / source (optional)'
+  },
+  show: {
+    label: 'TV Show',
+    thing: 'show',
+    unitLabel: 'Scene / Synopsis / Excerpt',
+    placeholder: 'Paste an episode synopsis, scene description, or dialogue excerpt…',
+    quoteUnit: 'dialogue or narration',
+    titlePh: 'Show title (optional)',
+    srcPh: 'Episode / source (optional)'
+  },
+  book: {
+    label: 'Book',
+    thing: 'book',
+    unitLabel: 'Excerpt / Summary',
+    placeholder: 'Paste a passage, chapter summary, or plot synopsis…',
+    quoteUnit: 'prose',
+    titlePh: 'Book title (optional)',
+    srcPh: 'Author / source (optional)'
+  }
+};
+let currentType = 'song';
+
+function buildTypeRow(){
+  const row = $('typeRow');
+  row.innerHTML = '';
+  Object.keys(MEDIA).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'type-btn' + (key === currentType ? ' active' : '');
+    btn.textContent = MEDIA[key].label;
+    btn.addEventListener('click', () => { currentType = key; applyType(); });
+    row.appendChild(btn);
+  });
+}
+function applyType(){
+  buildTypeRow();
+  const m = MEDIA[currentType];
+  $('unitLabel').textContent = m.unitLabel;
+  $('lyrics').placeholder = m.placeholder;
+  $('songTitle').placeholder = m.titlePh;
+  $('artistRef').placeholder = m.srcPh;
+  $('go').textContent = `Read the ${m.thing}`;
+}
+
 // ── Key persistence ──
 ['groqKey','anthropicKey'].forEach(k => {
   const el = $(k);
-  try { const v = localStorage.getItem('cs_ce_'+k); if(v) el.value = v; } catch(e){}
-  el.addEventListener('input', () => { try { localStorage.setItem('cs_ce_'+k, el.value); } catch(e){} });
+  try { const v = localStorage.getItem('cs_cr_'+k); if(v) el.value = v; } catch(e){}
+  el.addEventListener('input', () => { try { localStorage.setItem('cs_cr_'+k, el.value); } catch(e){} });
 });
 
-// ── Lyrics draft autosave (survives a timeout / reload) ──
-const DRAFT_KEY = 'cs_ce_lyrics_draft';
+// ── Source text draft autosave (survives a timeout / reload) ──
+const DRAFT_KEY = 'cs_cr_text_draft';
 let draftDebounce = null;
 (function restoreDraft(){
   try{
@@ -312,7 +366,7 @@ function clearDraft(){
 }
 
 // ── Persisted history (survives reload, max 5) ──
-const HISTORY_KEY = 'cs_ce_history';
+const HISTORY_KEY = 'cs_cr_history';
 function loadHistory(){ try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(_){ return []; } }
 function persistHistory(){
   try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-5))); }catch(_){}
@@ -320,131 +374,63 @@ function persistHistory(){
 let history = loadHistory();
 
 // ── PASS 1: Structure extraction ──
-const STRUCTURE_SYSTEM = `You read song lyrics and extract their underlying STRUCTURE — the actual situation in the song.
+function structureSystem(m) {
+  return `You read ${m.thing} material and extract its underlying STRUCTURE — the actual situation.
 
-Identify exactly these four things from the lyrics:
-1. SETTING: Where is the speaker, physically, or what is the song's central scene? One short phrase. Be specific.
-2. POSTURE: What is the speaker's body or stance doing — still, moving, declaring, pleading, working? One short phrase.
-3. CENTRAL OBJECT OR ACTION: The one object, image, or repeated action the song returns to. One short phrase.
-4. CORE CONTRADICTION OR TENSION: The single tension driving the song — what the speaker wants vs. what's happening, or what they believe vs. what's true. If the song has no real tension (e.g. a straightforward declaration), state its central claim instead. One sentence.
+Identify exactly these four things from the text below:
+1. SETTING: Where is the central figure, physically, or what is the central scene? One short phrase. Be specific.
+2. POSTURE: What is the central figure's body or stance doing — still, moving, declaring, pleading, working? One short phrase.
+3. CENTRAL OBJECT OR ACTION: The one object, image, or repeated action the material returns to. One short phrase.
+4. CORE CONTRADICTION OR TENSION: The single tension driving it — what is wanted vs. what's happening, or what's believed vs. what's true. If there is no real tension (e.g. a straightforward declaration), state its central claim instead. One sentence.
 
-Read the song as it actually is. Do not invert it, subvert it, or impose a meaning it does not have.
+Read the ${m.thing} as it actually is. Do not invert it, subvert it, or impose a meaning it does not have.
 
 Return ONLY valid JSON, no markdown, no preamble:
 {"setting":"...","posture":"...","object":"...","contradiction":"..."}`;
+}
 
-function buildStructurePrompt(lyrics, title, source) {
+function buildStructurePrompt(text, title, source, m) {
   const parts = [];
   if(title) parts.push(`Title: ${title}`);
-  if(source) parts.push(`Artist/source: ${source}`);
-  parts.push(`\nLyrics:\n${lyrics}`);
+  if(source) parts.push(`Source: ${source}`);
+  parts.push(`\n${m.unitLabel}:\n${text}`);
   return parts.join('\n');
 }
 
-// ── PASS 2: "What this song is about" reader ──
-const CONCEPT_SYSTEM = `You read song lyrics and explain what the song is about, in your own fresh words.
+// ── PASS 2: "What this is about" reader ──
+function conceptSystem(m) {
+  return `You read ${m.thing} material and explain what it is about, in your own fresh words.
 
-TASK: Using the lyrics and the structural read provided, write ONE paragraph that describes what THIS song is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
+TASK: Using the material and the structural read provided, write ONE paragraph that describes what THIS ${m.thing} is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
 
 HARD RULES:
-- Describe the song that was given to you. Do NOT invent a different scene, a different setting, or a different speaker. Stay true to what the song actually says.
-- Do NOT invert, subvert, or flip the song's meaning. If the song is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
+- Describe the ${m.thing} that was given to you. Do NOT invent a different scene, a different setting, or a different central figure. Stay true to what the material actually shows.
+- Do NOT invert, subvert, or flip its meaning. If it is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
 - Output exactly ONE paragraph, 85–135 words.
 - No headings. No bullets. No numbered lists.
-- NEVER quote the lyrics. Not a single phrase, line, hook, or title.
-- NEVER reuse the song's distinctive wording, images, or rhymes verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly in the song — e.g. "a celebration," "a journey," "a storm" — but never in the song's own phrasing.)
-- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening in the song and what it means.
-- Start naturally: "This song is about…" or "The song follows…" or "At its center, this song…"
+- NEVER quote the ${m.quoteUnit}. Not a single line, phrase, or title.
+- NEVER reuse the material's distinctive wording, images, or lines verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly present — e.g. "a celebration," "a journey," "a storm" — but never in the material's own phrasing.)
+- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening and what it means.
+- Start naturally: "This ${m.thing} is about…" or "The ${m.thing} follows…" or "At its center, this ${m.thing}…"
 - Cover: the situation/scene, the central wound or driving feeling, and the core tension or claim.
 
 FAITH & RELIGION HANDLING:
-- When a song touches Christianity or any faith, describe it respectfully and accurately. Report what the song does without endorsing, mocking, or arguing against the faith.
-- Do NOT add commentary that disparages Christianity, God, scripture, or believers. You are reading the song, not editorializing about religion.
-- If a song depicts sin, rebellion, doubt, or turning from faith, name that plainly as the song's subject — do not celebrate it, soften it, or frame the faith itself as the problem.
-- Never invert a song's moral or spiritual stance. If it treats faith as real and weighty, your read does too.
+- When the material touches Christianity or any faith, describe it respectfully and accurately. Report what it does without endorsing, mocking, or arguing against the faith.
+- Do NOT add commentary that disparages Christianity, God, scripture, or believers. You are reading the material, not editorializing about religion.
+- If it depicts sin, rebellion, doubt, or turning from faith, name that plainly as the subject — do not celebrate it, soften it, or frame the faith itself as the problem.
+- Never invert the material's moral or spiritual stance. If it treats faith as real and weighty, your read does too.
 
-QUALITY GATE: A reader who has never heard this song should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its words. If your paragraph would fit a different song equally well, it failed. If it could only describe this song, it passed.`;
+QUALITY GATE: A reader who has never encountered this ${m.thing} should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its wording. If your paragraph would fit a different piece equally well, it failed. If it could only describe this one, it passed.`;
+}
 
-function buildConceptPrompt(lyrics, title, source, structure) {
+function buildConceptPrompt(text, title, source, structure, m) {
   const parts = [];
   if(title) parts.push(`Title: ${title}`);
-  if(source) parts.push(`Artist/source: ${source}`);
-  parts.push(`\nSTRUCTURAL READ OF THE SONG:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
-  parts.push(`\nLyrics (read these closely — describe what they are about, but never quote or reuse their wording):\n${lyrics}`);
-  parts.push(`\nWrite one paragraph describing what this song is about. No preamble. No label. Just the paragraph.`);
+  if(source) parts.push(`Source: ${source}`);
+  parts.push(`\nSTRUCTURAL READ:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
+  parts.push(`\n${m.unitLabel} (read closely — describe what it's about, but never quote or reuse its wording):\n${text}`);
+  parts.push(`\nWrite one paragraph describing what this ${m.thing} is about. No preamble. No label. Just the paragraph.`);
   return parts.join('\n');
-}
-
-// ── PASS 3: Original concept generator (matches architecture, not the song) ──
-// Scene-anchored rewrite: testing through Prompt Forge showed a single raw
-// concrete scene — one place, one body, one involuntary gesture — beats a
-// conceptual paragraph as the input to a lyric-writing prompt. This pass now
-// also outputs that scene line directly, so it can travel straight into
-// Prompt Forge's theme field instead of needing to be reduced by hand.
-const GENERATE_SYSTEM = `You take a structural read of a REFERENCE song and invent a NEW, ORIGINAL song concept that shares its emotional architecture but is a genuinely different song.
-
-"Emotional architecture" means: the shape of the core tension (what's wanted vs. what's true), the type of wound underneath it, and the general dramatic movement (declaration, unraveling, reckoning, etc). It does NOT mean the reference song's specific content.
-
-HARD RULES:
-- Invent a new setting, a new central object/action, and a new posture. None of them may resemble the reference's — not the same scene type, not a close cousin of it, not a reskin (e.g. if the reference is a kitchen-light confession, do not give me a bathroom-mirror confession).
-- Everything you invent — the setting, the object, the posture, the scene line, and the concept paragraph — must belong to ONE single concrete scene. Do not scatter separate disconnected moments across different times or places.
-- Do not reuse any phrase, image, hook, or title fragment from the reference, even loosely paraphrased.
-- Do not name, describe, or allude to the reference song or artist.
-- The new concept should feel like it could become its own song with its own lyrics, not a variation or cover concept.
-- Preserve only the underlying tension type and wound category — e.g. "claiming freedom out loud while the body hasn't caught up" or "being loved conditionally and mistaking it for being chosen" — translated into completely different circumstances.
-
-OUTPUT: Return ONLY valid JSON, no markdown, no preamble:
-{"setting":"...","posture":"...","object":"...","contradiction":"...","concept":"...","scene":"..."}
-
-Where setting/posture/object/contradiction mirror the structural-read format (short phrases, one sentence for contradiction), and "concept" is ONE paragraph, 85–135 words, written in the same "This song is about…" style, describing the new original song — its situation, its wound, and its central tension or claim. No headings, no bullets, no quoting anything.
-
-"scene" is separate and different in kind from "concept": it is ONE single sentence, present tense, that shows — does not explain — the scene. It names a specific place, a specific body, and one involuntary physical gesture (a hand that won't stop shaking, a breath held too long, a thumb hovering over something, a jaw that won't unclench). No emotion words, no theme-naming, no metaphor — just the physical moment, the way a stage direction would write it. It must be drawn from the exact same scene as everything else in this output, not a separate image.`;
-
-function buildGeneratePrompt(structure, concept, title) {
-  const parts = [];
-  parts.push(`REFERENCE SONG — STRUCTURAL READ (for architecture only, do not reuse its content):`);
-  parts.push(`Setting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
-  parts.push(`\nWhat the reference song is about (for tension/wound type only, do not reuse its content):\n${concept}`);
-  parts.push(`\nNow invent a fully original song concept that matches this song's emotional architecture but is its own song, per the rules. Return only the JSON, including the "scene" field.`);
-  return parts.join('\n');
-}
-
-async function generateOriginal(entry, btn) {
-  if(!$('groqKey').value.trim() && !$('anthropicKey').value.trim()) {
-    setStatus('Add a Groq or Anthropic key below.','err'); return;
-  }
-  const originalLabel = btn.textContent;
-  btn.disabled = true;
-  btn.textContent = 'Generating…';
-  setSpinner(true);
-  setStatus('Generating an original matching concept…', '');
-  entry.originalPending = true;
-  persistHistory();
-  try {
-    const raw = await runWithRetry(GENERATE_SYSTEM, buildGeneratePrompt(entry.structure, entry.concept, entry.title), 500, 'original concept');
-    const parsed = parseStructure(raw);
-    entry.original = {
-      concept: cleanOutput(parsed.concept || ''),
-      scene: cleanOutput(parsed.scene || ''),
-      structure: {
-        setting: parsed.setting || '',
-        posture: parsed.posture || '',
-        object: parsed.object || '',
-        contradiction: parsed.contradiction || ''
-      }
-    };
-    entry.originalPending = false;
-    persistHistory();
-    renderResults();
-    setStatus('', '');
-  } catch(e) {
-    setStatus(`Failed to generate original concept: ${e.message || 'unknown error'}`, 'err');
-    btn.disabled = false;
-    btn.textContent = originalLabel;
-    // entry.originalPending stays true — the "Generate original concept" button
-    // reappears on reload instead of the attempt being silently lost.
-  }
-  setSpinner(false);
 }
 
 // ── API calls ──
@@ -527,7 +513,7 @@ async function runWithRetry(system, user, maxTokens=400, stageLabel='') {
 function cleanOutput(text) {
   return text
     .replace(/^["'""„]+|["'""]+$/g, '')
-    .replace(/^(WHAT THIS SONG IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH|SCENE)[:\s]*/i, '')
+    .replace(/^(WHAT THIS IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
     .trim();
 }
 
@@ -578,44 +564,6 @@ function copyText(text, btn, label='Copy summary') {
   }
 }
 
-// ── Unison handoff to Prompt Forge ──
-// Both tools are meant to sit in the same Signal Tools folder on GitHub Pages,
-// so this opens the sibling file with the scene pre-filled via a query param.
-// Prompt Forge reads ?theme= on load and drops it straight into its theme field.
-function openInPromptForge(sceneText) {
-  const url = 'prompt-forge.html?theme=' + encodeURIComponent(sceneText);
-  const win = window.open(url, '_blank');
-  // If the sibling file isn't deployed alongside this one yet (e.g. testing
-  // from a single downloaded file or a preview sandbox), window.open either
-  // throws, returns null, or silently opens a dead tab. Either way, fall
-  // back to putting the scene on the clipboard so the trip isn't wasted.
-  if (!win) {
-    copyTextRaw(sceneText, () => {
-      setStatus('Could not open Prompt Forge directly — scene copied instead. Make sure both files are deployed in the same folder, then paste it in.', 'warn');
-    });
-  }
-}
-
-function copyTextRaw(text, onDone) {
-  const fallback = () => {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-      document.body.appendChild(ta);
-      ta.focus(); ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      onDone();
-    } catch(_) {}
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(onDone).catch(fallback);
-  } else {
-    fallback();
-  }
-}
-
 function renderResults() {
   const box = $('results');
   box.innerHTML = '';
@@ -640,6 +588,7 @@ function renderResults() {
 function buildResultEl(entry, old) {
   const wc = wordCount(entry.concept);
   const inRange = wc >= 85 && wc <= 135;
+  const typeLabel = MEDIA[entry.type || 'song'].label;
 
   const el = document.createElement('div');
   el.className = 'result' + (old ? ' old' : '');
@@ -653,45 +602,9 @@ function buildResultEl(entry, old) {
       Core tension/claim: ${entry.structure.contradiction || '—'}
     </div>` : '';
 
-  let origHTML = '';
-  if(entry.original) {
-    const owc = wordCount(entry.original.concept);
-    const oInRange = owc >= 85 && owc <= 135;
-    origHTML = `
-      <div class="orig-block">
-        <div class="r-head">
-          <span class="r-label">Original concept · matching architecture</span>
-        </div>
-        <div class="structure-box">
-          <span class="lab">New structure</span>
-          Setting: ${entry.original.structure.setting || '—'}<br>
-          Posture: ${entry.original.structure.posture || '—'}<br>
-          Central object/action: ${entry.original.structure.object || '—'}<br>
-          Core tension/claim: ${entry.original.structure.contradiction || '—'}
-        </div>
-        <div class="concept-box orig-concept-box"></div>
-        <span class="word-badge ${oInRange ? '' : 'warn'}">${owc} words${oInRange ? '' : ' — outside target'}</span>
-        <div class="scene-box">
-          <span class="scene-lab">Scene · for Prompt Forge</span>
-          <span class="orig-scene-text"></span>
-        </div>
-        <div class="btnrow">
-          <button class="mini copy-orig-btn">Copy concept</button>
-          <button class="mini copy-scene-btn">Copy scene</button>
-          <button class="mini forge open-forge-btn">Open in Prompt Forge →</button>
-        </div>
-      </div>`;
-  } else if(entry.originalPending) {
-    origHTML = `
-      <div class="orig-block">
-        <div class="r-head"><span class="r-label" style="color:var(--amber)">Original concept — unfinished</span></div>
-        <div style="font-size:11px;color:var(--muted);">Last attempt didn't finish. Tap below to retry — nothing needs to be re-pasted.</div>
-      </div>`;
-  }
-
   el.innerHTML = `
     <div class="r-head">
-      <span class="r-label">${old ? 'Previous read' : 'What this song is about'}</span>
+      <span class="r-label">${old ? 'Previous read' : "What this is about"}<span class="r-type">${typeLabel}</span></span>
       <div class="r-meta">${entry.title ? `<span>${entry.title}</span><br>` : ''}${entry.ts}</div>
     </div>
     ${structureHTML}
@@ -699,10 +612,8 @@ function buildResultEl(entry, old) {
     <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
     <div class="btnrow">
       <button class="mini copy-btn">Copy summary</button>
-      ${!entry.original ? `<button class="mini accent generate-btn">${entry.originalPending ? 'Retry: generate original concept' : 'Generate original concept'}</button>` : ''}
       ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
-    </div>
-    ${origHTML}`;
+    </div>`;
 
   el.querySelector('.concept-box').textContent = entry.concept;
   el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.concept, ev.target));
@@ -713,39 +624,31 @@ function buildResultEl(entry, old) {
       renderResults();
     });
   }
-  const genBtn = el.querySelector('.generate-btn');
-  if(genBtn) genBtn.addEventListener('click', () => generateOriginal(entry, genBtn));
-
-  if(entry.original) {
-    el.querySelector('.orig-concept-box').textContent = entry.original.concept;
-    el.querySelector('.copy-orig-btn').addEventListener('click', ev => copyText(entry.original.concept, ev.target, 'Copy concept'));
-    el.querySelector('.orig-scene-text').textContent = entry.original.scene;
-    el.querySelector('.copy-scene-btn').addEventListener('click', ev => copyText(entry.original.scene, ev.target, 'Copy scene'));
-    el.querySelector('.open-forge-btn').addEventListener('click', () => openInPromptForge(entry.original.scene));
-  }
   return el;
 }
 
+applyType();
 renderResults();
 
 $('go').addEventListener('click', async () => {
-  const lyrics = $('lyrics').value.trim();
+  const m = MEDIA[currentType];
+  const text = $('lyrics').value.trim();
   const title = $('songTitle').value.trim();
   const source = $('artistRef').value.trim();
 
-  if(!lyrics) { setStatus('Paste lyrics first.','err'); return; }
+  if(!text) { setStatus(`Paste ${m.unitLabel.toLowerCase()} first.`,'err'); return; }
   if(!$('groqKey').value.trim() && !$('anthropicKey').value.trim()) {
     setStatus('Add a Groq or Anthropic key below.','err'); return;
   }
 
   $('go').disabled = true;
   setSpinner(true);
-  setStatus('Reading the song\'s structure…', '');
+  setStatus('Reading the structure…', '');
 
   let stage = 'structure read';
   try {
     // Pass 1: structure
-    const rawStructure = await runWithRetry(STRUCTURE_SYSTEM, buildStructurePrompt(lyrics, title, source), 250, 'structure read');
+    const rawStructure = await runWithRetry(structureSystem(m), buildStructurePrompt(text, title, source, m), 250, 'structure read');
     let structure;
     try {
       structure = parseStructure(rawStructure);
@@ -754,10 +657,10 @@ $('go').addEventListener('click', async () => {
     }
 
     stage = 'summary';
-    setStatus('Writing what the song is about…', '');
+    setStatus('Writing what it\'s about…', '');
 
     // Pass 2: what it's about
-    const rawConcept = await runWithRetry(CONCEPT_SYSTEM, buildConceptPrompt(lyrics, title, source, structure), 400, 'summary');
+    const rawConcept = await runWithRetry(conceptSystem(m), buildConceptPrompt(text, title, source, structure, m), 400, 'summary');
     const concept = cleanOutput(rawConcept);
 
     const now = new Date();
@@ -765,6 +668,7 @@ $('go').addEventListener('click', async () => {
       concept,
       structure,
       title: title || null,
+      type: currentType,
       ts: now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
     });
     if(history.length > 5) history.shift();
@@ -775,7 +679,7 @@ $('go').addEventListener('click', async () => {
     setStatus('', '');
   } catch(e) {
     setStatus(`Failed at ${stage}: ${e.message || 'unknown error'}`, 'err');
-    // Lyrics stay in the draft-saved textarea either way — nothing to retype.
+    // Text stays in the draft-saved textarea either way — nothing to retype.
   }
 
   setSpinner(false);
