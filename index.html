@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Reader · v2.0</title>
+<title>Concept Reader · v2.1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -147,18 +147,17 @@
   }
   .structure-box .lab{color:var(--cyan-dim);letter-spacing:.2em;font-size:9px;text-transform:uppercase;display:block;margin-bottom:6px;}
 
-  .concept-box{
+  .prompt-box{
     background:#05070a;border:1px dashed var(--line);border-radius:10px;
     padding:15px 16px;font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;
   }
-  .result.old .concept-box{color:var(--muted);}
+  .result.old .prompt-box{color:var(--muted);}
 
   .word-badge{
     display:inline-block;margin-top:8px;padding:3px 9px;border-radius:5px;
     font-size:10px;letter-spacing:.2em;text-transform:uppercase;
     background:var(--cyan-faint);border:1px solid var(--cyan-dim);color:var(--cyan-dim);
   }
-  .word-badge.warn{background:rgba(240,168,58,0.08);border-color:var(--amber);color:var(--amber);}
 
   .btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
   .mini{
@@ -210,9 +209,9 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Signal Tools · v2.0</div>
+    <div class="kicker">Signal Tools · v2.1</div>
     <h1><span class="glitch" data-t="CONCEPT READER">CONCEPT READER</span></h1>
-    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back <b>what it's actually about</b>, in fresh words — its structure, its wound, and the tension underneath it.</p>
+    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back an <b>engineered ChatGPT prompt</b> that writes an original, rhythmically-optimized song inspired by its situation and tension — never a copy, never a retelling.</p>
   </header>
 
   <div class="type-row" id="typeRow"></div>
@@ -245,9 +244,9 @@
     <div class="crit-body">
       Pick what kind of material you're pasting — song, movie, TV show, or book — then run it through two passes.<br><br>
       <b>Pass 1 — Structure read:</b> identifies the actual situation — the setting, the central body's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
-      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song, movie, show, or book is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the source material, never reuses its distinctive lines or phrasing, and does not invent a different scene. It tells you what the thing you pasted is actually saying.<br><br>
-      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
-      <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
+      <b>Pass 2 — Engineered ChatGPT prompt:</b> using that structural read, writes a complete, self-contained prompt you paste directly into ChatGPT. It instructs ChatGPT to write an <i>original</i> song — rhythmically optimized for singing, with Suno-ready section tags — built on the real situation and tension underneath the source, never on a retelling of its plot and never on its actual wording.<br><br>
+      Hard rule either pass: the source's own lines, phrasing, or dialogue are never quoted or reused — not in the structure read, not in the engineered prompt.
+      <div class="ex">Example shape of what Pass 2 hands back: "You are a world-class songwriter. Write a complete, original song about someone who keeps showing up to a celebration they no longer believe in — a hollow ritual they can't yet name the moment they stopped believing in. Invented details: a folded program they keep refolding, a toast they mouth along to without meaning it… [rhythm rules] … [Suno tag formatting] … Output only the finished lyrics."</div>
     </div>
   </details>
 
@@ -259,7 +258,7 @@
     </div>
   </div>
 
-  <footer>Version 2.0 · Song / Movie / Show / Book · 2026-08-11</footer>
+  <footer>Version 2.1 · Song / Movie / Show / Book · ChatGPT Song Prompt</footer>
 </div>
 
 <script>
@@ -397,39 +396,47 @@ function buildStructurePrompt(text, title, source, m) {
   return parts.join('\n');
 }
 
-// ── PASS 2: "What this is about" reader ──
-function conceptSystem(m) {
-  return `You read ${m.thing} material and explain what it is about, in your own fresh words.
+// ── PASS 2: Engineered ChatGPT song-writing prompt ──
+function promptSystem(m) {
+  return `You are a prompt engineer who writes world-class instructions for AI songwriters. Using a structural read of ${m.thing} material, you write a fully engineered prompt that a songwriter can paste directly into ChatGPT — with zero other context — to get back a complete, original, finished song, rhythmically optimized for singing, inspired by the real situation and tension in the source.
 
-TASK: Using the material and the structural read provided, write ONE paragraph that describes what THIS ${m.thing} is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
+TASK: Write ONE engineered ChatGPT prompt that instructs ChatGPT to write an original song inspired by the situation, wound, and tension in this ${m.thing} — NOT a retelling of its plot, NOT a cover, and NOT built on any of its actual wording.
 
 HARD RULES:
-- Describe the ${m.thing} that was given to you. Do NOT invent a different scene, a different setting, or a different central figure. Stay true to what the material actually shows.
-- Do NOT invert, subvert, or flip its meaning. If it is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
-- Output exactly ONE paragraph, 85–135 words.
-- No headings. No bullets. No numbered lists.
-- NEVER quote the ${m.quoteUnit}. Not a single line, phrase, or title.
-- NEVER reuse the material's distinctive wording, images, or lines verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly present — e.g. "a celebration," "a journey," "a storm" — but never in the material's own phrasing.)
-- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening and what it means.
-- Start naturally: "This ${m.thing} is about…" or "The ${m.thing} follows…" or "At its center, this ${m.thing}…"
-- Cover: the situation/scene, the central wound or driving feeling, and the core tension or claim.
+- NEVER quote the ${m.quoteUnit}. Not a single line, phrase, or title — anywhere in the prompt you write.
+- NEVER reuse the material's distinctive wording, images, or lines verbatim, even inside the prompt.
+- The song this produces must be an ORIGINAL piece inspired by the emotional core and tension — not a retelling of the specific plot or characters.
+- Do not invert, subvert, or flip the material's meaning — build the new song on its actual emotional core as read in the structural pass.
+- Invent 5-7 specific physical details (objects, behavioral moments, sensory details) native to the world implied by the structural read — never generic or archetypal imagery, never abstract emotional labels standing in for a physical anchor.
 
 FAITH & RELIGION HANDLING:
-- When the material touches Christianity or any faith, describe it respectfully and accurately. Report what it does without endorsing, mocking, or arguing against the faith.
-- Do NOT add commentary that disparages Christianity, God, scripture, or believers. You are reading the material, not editorializing about religion.
-- If it depicts sin, rebellion, doubt, or turning from faith, name that plainly as the subject — do not celebrate it, soften it, or frame the faith itself as the problem.
-- Never invert the material's moral or spiritual stance. If it treats faith as real and weighty, your read does too.
+- When the material touches Christianity or any faith, handle it respectfully and accurately in what you instruct ChatGPT to write — report what it does without endorsing, mocking, or arguing against the faith.
+- Never invert the material's moral or spiritual stance in the prompt you write.
 
-QUALITY GATE: A reader who has never encountered this ${m.thing} should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its wording. If your paragraph would fit a different piece equally well, it failed. If it could only describe this one, it passed.`;
+THE ENGINEERED PROMPT YOU WRITE MUST INSTRUCT CHATGPT TO:
+- Act as a world-class songwriter and lyricist.
+- Write a complete, original song inspired by the situation, wound, and tension from the structural read — restated in fresh words — with the invented physical details woven in.
+- Optimize rhythmically for singing:
+  • Keep syllable counts consistent line-to-line within each verse/chorus so the meter holds when sung.
+  • Land stressed syllables on strong beats the way they'd fall in natural speech — never fighting the rhythm.
+  • Make every chorus line singable in a single breath.
+  • Avoid consonant clusters and multi-syllable pile-ups that are awkward to sing at tempo.
+  • Build one simple, rhythmically tight, instantly repeatable hook line as the emotional and melodic center.
+- Format section/style tags exactly as Suno reads them, with vocal direction inside the bracket itself, e.g. "[Verse 1 — intimate, restrained vocals]" — never as a separate parenthetical note.
+- Output ONLY the finished lyrics with section tags — no preamble, no explanation, no notes.
+
+QUALITY GATE: A songwriter who pastes this prompt into ChatGPT with zero other context should get back a finished, singable, original song that carries this material's real emotional core — without ChatGPT ever having seen the source's actual wording. If the prompt could only reproduce the source, it failed. If it produces something original but hollow, it also failed.
+
+Return ONLY the engineered prompt text, ready to paste into ChatGPT. No preamble, no headers, no markdown fencing.`;
 }
 
-function buildConceptPrompt(text, title, source, structure, m) {
+function buildPromptUser(text, title, source, structure, m) {
   const parts = [];
   if(title) parts.push(`Title: ${title}`);
   if(source) parts.push(`Source: ${source}`);
   parts.push(`\nSTRUCTURAL READ:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
-  parts.push(`\n${m.unitLabel} (read closely — describe what it's about, but never quote or reuse its wording):\n${text}`);
-  parts.push(`\nWrite one paragraph describing what this ${m.thing} is about. No preamble. No label. Just the paragraph.`);
+  parts.push(`\n${m.unitLabel} (read closely for tone and emotional truth — never quote or reuse its wording):\n${text}`);
+  parts.push(`\nWrite the engineered ChatGPT prompt now. No preamble. No label. Just the prompt text.`);
   return parts.join('\n');
 }
 
@@ -513,7 +520,7 @@ async function runWithRetry(system, user, maxTokens=400, stageLabel='') {
 function cleanOutput(text) {
   return text
     .replace(/^["'""„]+|["'""]+$/g, '')
-    .replace(/^(WHAT THIS IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
+    .replace(/^(SONG PROMPT|ENGINEERED PROMPT|PROMPT|OUTPUT)[:\s]*/i, '')
     .trim();
 }
 
@@ -538,7 +545,7 @@ function setSpinner(on) {
   $('spinner').classList.toggle('active', on);
 }
 
-function copyText(text, btn, label='Copy summary') {
+function copyText(text, btn, label='Copy prompt') {
   const done = () => {
     btn.textContent = 'Copied ✓';
     setTimeout(() => btn.textContent = label, 2200);
@@ -586,8 +593,7 @@ function renderResults() {
 }
 
 function buildResultEl(entry, old) {
-  const wc = wordCount(entry.concept);
-  const inRange = wc >= 85 && wc <= 135;
+  const wc = wordCount(entry.songPrompt);
   const typeLabel = MEDIA[entry.type || 'song'].label;
 
   const el = document.createElement('div');
@@ -604,19 +610,19 @@ function buildResultEl(entry, old) {
 
   el.innerHTML = `
     <div class="r-head">
-      <span class="r-label">${old ? 'Previous read' : "What this is about"}<span class="r-type">${typeLabel}</span></span>
+      <span class="r-label">${old ? 'Previous read' : "ChatGPT Song Prompt"}<span class="r-type">${typeLabel}</span></span>
       <div class="r-meta">${entry.title ? `<span>${entry.title}</span><br>` : ''}${entry.ts}</div>
     </div>
     ${structureHTML}
-    <div class="concept-box"></div>
-    <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
+    <div class="prompt-box"></div>
+    <span class="word-badge">${wc} words</span>
     <div class="btnrow">
-      <button class="mini copy-btn">Copy summary</button>
+      <button class="mini copy-btn">Copy prompt</button>
       ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
     </div>`;
 
-  el.querySelector('.concept-box').textContent = entry.concept;
-  el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.concept, ev.target));
+  el.querySelector('.prompt-box').textContent = entry.songPrompt;
+  el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.songPrompt, ev.target));
   if(!old) {
     el.querySelector('.discard-btn').addEventListener('click', () => {
       history.pop();
@@ -656,16 +662,16 @@ $('go').addEventListener('click', async () => {
       throw new Error('Could not read the structure JSON. The model returned something unexpected — try again.');
     }
 
-    stage = 'summary';
-    setStatus('Writing what it\'s about…', '');
+    stage = 'song prompt';
+    setStatus('Engineering the ChatGPT prompt…', '');
 
-    // Pass 2: what it's about
-    const rawConcept = await runWithRetry(conceptSystem(m), buildConceptPrompt(text, title, source, structure, m), 400, 'summary');
-    const concept = cleanOutput(rawConcept);
+    // Pass 2: engineered ChatGPT song-writing prompt
+    const rawPrompt = await runWithRetry(promptSystem(m), buildPromptUser(text, title, source, structure, m), 900, 'song prompt');
+    const songPrompt = cleanOutput(rawPrompt);
 
     const now = new Date();
     history.push({
-      concept,
+      songPrompt,
       structure,
       title: title || null,
       type: currentType,
