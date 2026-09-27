@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Reader · v2.5</title>
+<title>Concept Reader · v2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -147,17 +147,18 @@
   }
   .structure-box .lab{color:var(--cyan-dim);letter-spacing:.2em;font-size:9px;text-transform:uppercase;display:block;margin-bottom:6px;}
 
-  .prompt-box{
+  .concept-box{
     background:#05070a;border:1px dashed var(--line);border-radius:10px;
     padding:15px 16px;font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;
   }
-  .result.old .prompt-box{color:var(--muted);}
+  .result.old .concept-box{color:var(--muted);}
 
   .word-badge{
     display:inline-block;margin-top:8px;padding:3px 9px;border-radius:5px;
     font-size:10px;letter-spacing:.2em;text-transform:uppercase;
     background:var(--cyan-faint);border:1px solid var(--cyan-dim);color:var(--cyan-dim);
   }
+  .word-badge.warn{background:rgba(240,168,58,0.08);border-color:var(--amber);color:var(--amber);}
 
   .btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
   .mini{
@@ -209,9 +210,9 @@
 <div class="wrap">
 
   <header>
-    <div class="kicker">Signal Tools · v2.5</div>
+    <div class="kicker">Signal Tools · v2.0</div>
     <h1><span class="glitch" data-t="CONCEPT READER">CONCEPT READER</span></h1>
-    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back an <b>engineered ChatGPT prompt</b> that writes an original, rhythmically-optimized song inspired by its situation and tension — never a copy, never a retelling.</p>
+    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back <b>what it's actually about</b>, in fresh words — its structure, its wound, and the tension underneath it.</p>
   </header>
 
   <div class="type-row" id="typeRow"></div>
@@ -243,11 +244,10 @@
     <summary>How it works</summary>
     <div class="crit-body">
       Pick what kind of material you're pasting — song, movie, TV show, or book — then run it through two passes.<br><br>
-      Concept Reader separates <i>what a song says</i> from <i>how it works</i>. Craft DNA preserves the source's transferable songwriting mechanics while the Transfer Engine gives the new song a different expressive identity.<br><br>
-      <b>Pass 1 — Read and abstract:</b> reads the source literally and emotionally, identifies its setting, posture, central object/action, and core tension, then goes deeper — the <b>emotional wound</b> and <b>central paradox</b> (inferring depth without inventing severity), the <b>source engine</b> (the conceptual system, if any, the source itself genuinely uses — purely analytical, shown to you, never sent anywhere else), an independently-chosen <b>transfer engine</b> (a conceptual system picked only because its own mechanics fit the wound and paradox — never derived from or related to the source engine), and <b>Craft DNA</b> — the 3-6 transferable songwriting mechanics that actually make this source work (repetition behavior, withholding, escalation, recognition, and so on), stripped of every trace of its topic, imagery, vocabulary, and genre. Any engine can come back "DIRECT" when nothing forced would help.<br><br>
-      <b>Pass 2 — Engineered ChatGPT prompt:</b> receives the emotional abstraction, the transfer engine, and Craft DNA — never the original source text, title, names, or the source engine. This is a deliberate abstraction barrier: Pass 2 can't anchor to the source's wording, and can't even name what conceptual system it used. When the transfer engine is DIRECT, the conceptual-system section is left out silently. The generated prompt turns Craft DNA into behavioral instructions (how the idea should move, withhold, or recontextualize) rather than style imitation — <b>preserve the source's songwriting mechanics, replace its expression</b> — and gives ChatGPT the physics of the conceptual world and the craft pressure to write with, while leaving the actual mappings, hook, and lines for ChatGPT to discover.<br><br>
-      Hard rule for Pass 1: the source's own lines, phrasing, or dialogue are never quoted or reused, even in the structure read. Pass 2 physically cannot reuse them — it never receives them.
-      <div class="ex">Example shape of what Pass 2 hands back: "You are a world-class songwriter. The emotional wound: someone keeps performing belief in something that quietly stopped being true. Governing conceptual system: [a transfer engine — unrelated to whatever the source actually used] — its own vocabulary of obligation, breach, renewal, the gap between what was promised and what was meant. The governing metaphor should not merely decorate the song; it should govern how the song thinks… [emotional progression] … [hook and optional human-fracture requirements] … [Suno tag formatting] … Begin directly with Verse 1. Output only the finished lyrics."</div>
+      <b>Pass 1 — Structure read:</b> identifies the actual situation — the setting, the central body's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
+      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song, movie, show, or book is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the source material, never reuses its distinctive lines or phrasing, and does not invent a different scene. It tells you what the thing you pasted is actually saying.<br><br>
+      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
+      <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
     </div>
   </details>
 
@@ -259,7 +259,7 @@
     </div>
   </div>
 
-  <footer>Version 2.5 · Song / Movie / Show / Book · Craft DNA + Transfer Engine</footer>
+  <footer>Version 2.0 · Song / Movie / Show / Book · 2026-08-11</footer>
 </div>
 
 <script>
@@ -375,25 +375,18 @@ let history = loadHistory();
 
 // ── PASS 1: Structure extraction ──
 function structureSystem(m) {
-  return `You read ${m.thing} material and extract its underlying STRUCTURE — the actual situation, the deeper emotional and conceptual logic underneath it, and the transferable songwriting mechanics that make it work.
+  return `You read ${m.thing} material and extract its underlying STRUCTURE — the actual situation.
 
-Identify exactly these nine things from the text below:
+Identify exactly these four things from the text below:
 1. SETTING: Where is the central figure, physically, or what is the central scene? One short phrase. Be specific.
 2. POSTURE: What is the central figure's body or stance doing — still, moving, declaring, pleading, working? One short phrase.
 3. CENTRAL OBJECT OR ACTION: The one object, image, or repeated action the material returns to. One short phrase.
 4. CORE CONTRADICTION OR TENSION: The single tension driving it — what is wanted vs. what's happening, or what's believed vs. what's true. If there is no real tension (e.g. a straightforward declaration), state its central claim instead. One sentence.
-5. EMOTIONAL WOUND: The deeper emotional problem underneath the literal situation — what emotionally hurts, threatens, destabilizes, or traps the central figure. Do not simply summarize the plot. Infer depth, but do not invent severity: identify the deepest wound genuinely supported by the source, not the most dramatic one you could theoretically construct — but don't be so conservative that this collapses into paraphrasing literal events either. It should still interpret. One sentence.
-6. CENTRAL PARADOX: The two apparently incompatible emotional truths operating simultaneously in the central figure. Concise and specific — describe the actual logic of THIS material, never a generic template borrowed from elsewhere. One sentence.
-7. SOURCE ENGINE: The conceptual system genuinely operating in the source, if one exists — a domain with its own vocabulary, rules, actions, consequences that the source's own imagery clearly draws from (examples of the TYPE of thing only, never default to or rotate through a fixed list: gravity/orbit, contracts/legal language, surveillance/archive, anatomy, ritual, machinery, navigation, astronomy, transmission, architecture, mathematics). This is purely analytical — it describes HOW the source carries its emotional meaning, not a creative choice. If the source's power instead comes primarily from direct language, rhetorical structure, repetition, conversational escalation, or another device rather than an extended conceptual metaphor, return the literal string "DIRECT" and briefly note what actually carries the source instead.
-8. TRANSFER ENGINE: A conceptual system capable of carrying the emotional mechanics of the WOUND and PARADOX above — a domain with its own vocabulary, rules, actions, consequences, and transformations that genuinely fits THIS wound and paradox. Derive this independently: do not derive it from, mirror, oppose, complement, or otherwise systematically relate it to SOURCE ENGINE. Treat the two fields as fully unconnected analyses — arrive at TRANSFER ENGINE as if SOURCE ENGINE did not exist, choosing it solely because its internal mechanics fit the wound and paradox. Never a mechanical swap from a fixed list, and never chosen merely to be different. If no conceptual system genuinely improves the song — if the wound and paradox are best carried by direct language, rhetorical structure, repetition, or escalation instead — return "DIRECT".
-9. CRAFT DNA: The abstract SONGWRITING MECHANICS that make this particular source effective — transferable craft behavior, not subject matter. Consider (without mechanically filling every category): speaker posture and whether the speaker changes or stays fixed; emotional trajectory; tension/release behavior; hook, repetition, and chorus function; the verse-to-chorus relationship; escalation pattern; directness versus implication; how information is withheld or revealed, and where recognition occurs and whether it changes behavior; how contradiction is used; how repetition gains new meaning; whether sections broaden, narrow, intensify, destabilize, reverse, or recontextualize the central idea; whether the song's power comes primarily from accumulation, compression, reversal, withholding, obsession, contrast, escalation, circularity, inevitability, or another structural mechanism; conceptual density; emotional explicitness; how the ending relates to the beginning. Identify the 3-6 craft behaviors that MOST explain why this particular source works — answering "beyond its subject matter, vocabulary, imagery, and genre, what does this song DO that makes its emotional idea hit?" CRAFT DNA MUST NOT contain: source lyrics, distinctive source phrases, copied imagery, character names, titles, proper nouns, source-specific metaphor vocabulary, recognizable melodic information, instructions to imitate the artist, or stylistic mimicry of a living artist. Describe function only ("repetition initially reads as desire, then acquires a more destructive meaning as later sections add context"), never content or wording. Before finalizing this field, silently check: if you removed the source's topic, imagery, genre, vocabulary, and metaphor, would this description still tell another songwriter something meaningful about HOW this particular song works? If no, it's too superficial. Could this description cause someone to reproduce recognizable source expression? If yes, it's too specific. Aim between those extremes. Do not output this check — only the field itself.
 
 Read the ${m.thing} as it actually is. Do not invert it, subvert it, or impose a meaning it does not have.
 
-Before returning the JSON, silently check: (1) did you read accurately rather than improve the source? (2) is the wound clearly supported by evidence in the source, without inflating its severity? (3) does the paradox actually exist in the source? (4) does SOURCE ENGINE describe what the source genuinely does? (5) was TRANSFER ENGINE selected independently of SOURCE ENGINE, from the wound and paradox alone? (6) would DIRECT be stronger than forcing a conceptual system, for either engine? (7) does CRAFT DNA capture transferable mechanics without any source-specific content? Do not output this checklist — only the JSON below.
-
 Return ONLY valid JSON, no markdown, no preamble:
-{"setting":"...","posture":"...","object":"...","contradiction":"...","wound":"...","paradox":"...","sourceEngine":"...","transferEngine":"...","craftDNA":"..."}`;
+{"setting":"...","posture":"...","object":"...","contradiction":"..."}`;
 }
 
 function buildStructurePrompt(text, title, source, m) {
@@ -404,84 +397,39 @@ function buildStructurePrompt(text, title, source, m) {
   return parts.join('\n');
 }
 
-// ── PASS 2: Engineered ChatGPT song-writing prompt ──
-function promptSystem(m) {
-  return `You are a prompt engineer who writes world-class instructions for AI songwriters. You are given only a structural ABSTRACTION of ${m.thing} material — its situation, emotional wound, central paradox, a transfer engine (a conceptual system distinct from whatever the source used), and Craft DNA (the transferable songwriting mechanics that made the source work, already stripped of its topic, imagery, vocabulary, and genre). You are NOT given the original source text, title, or any identifying names — that material was deliberately withheld from you. Using only this abstraction, you write a fully engineered prompt that a songwriter can paste directly into ChatGPT, with zero other context, to get back a complete, original, finished song.
+// ── PASS 2: "What this is about" reader ──
+function conceptSystem(m) {
+  return `You read ${m.thing} material and explain what it is about, in your own fresh words.
 
-GOVERNING PRINCIPLE: PRESERVE THE SOURCE'S SONGWRITING MECHANICS. REPLACE ITS EXPRESSION. The final song should not resemble the source lyrically, but the source should have materially influenced HOW the new song works. Resemblance to the source at the level of abstract songwriting mechanics (via Craft DNA) is not a failure — it is the point. What must be replaced is wording, imagery, metaphorical identity, narrative specifics, and distinctive phrases. What may intentionally survive is emotional mechanics, structural logic, functional behavior, and abstract craft strategy. Emotional truth, the transfer engine, and Craft DNA each do a different job — emotional truth tells the songwriter what hurts, the transfer engine gives the new song an original conceptual language, and Craft DNA tells the songwriter how the emotional idea should behave across the song. Use all three; none replaces the others.
-
-TASK: Write ONE engineered ChatGPT prompt that gives ChatGPT the CONDITIONS to discover a strong, original song — not pre-written by you, and with no way to trace back to whatever specific source inspired it.
+TASK: Using the material and the structural read provided, write ONE paragraph that describes what THIS ${m.thing} is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
 
 HARD RULES:
-- Never include a title, artist, author, character name, or any other identifying reference to the source material anywhere in the prompt you write. You were not given these, and the prompt you produce must not require or invite them.
-- The song this produces must be an original piece built on the emotional wound and paradox — never a retelling of a specific plot or characters.
-- Do not invert, subvert, or flip the emotional meaning implied by the abstraction you were given.
-- Use the transfer engine as the governing conceptual system in the final prompt, when one is provided. The songwriter using this prompt should have no way to know what conceptual system, if any, the original inspiration used.
-- If the transfer engine is "DIRECT" (no extended conceptual metaphor should be forced), do not invent one. Build the engineered prompt around direct language, escalation, repetition, contradiction, or whatever device best suits this emotional material, while keeping every other requirement below intact.
-- Translate Craft DNA into functional, behavioral guidance only — never into style imitation. Never write anything like "write the chorus like [artist/song]," "use the source's exact verse structure," or "match the source's phrasing, cadence, rhyme scheme, or melodic shape." Instead write behavioral instructions such as: the speaker's understanding should change faster than his behavior; repetition should initially read one way and acquire a different meaning as later sections add context; the emotional turn should increase awareness without producing recovery; the chorus should compress the contradiction rather than summarize the verses. Never mention or imply what the source was.
-- Do not let engagement with the transfer engine crowd out Craft DNA. A conceptual system is not the song — Craft DNA governs how the emotional idea behaves across the song; the transfer engine is only the language it behaves in.
-- Do NOT invent or require a list of arbitrary physical details (objects, behavioral moments, sensory snapshots) for the song to include. Do not tell ChatGPT to manufacture coffee cups, kitchens, windows, phones, cars, bedrooms, mirrors, clocks, streetlights, clothing, weather, or other household/cinematic props just to make the song feel specific. Physical imagery is allowed only when it grows naturally out of the governing conceptual system — or, in a DIRECT case, when it materially deepens the emotional situation — never inserted for its own sake or as decorative scene-setting.
+- Describe the ${m.thing} that was given to you. Do NOT invent a different scene, a different setting, or a different central figure. Stay true to what the material actually shows.
+- Do NOT invert, subvert, or flip its meaning. If it is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
+- Output exactly ONE paragraph, 85–135 words.
+- No headings. No bullets. No numbered lists.
+- NEVER quote the ${m.quoteUnit}. Not a single line, phrase, or title.
+- NEVER reuse the material's distinctive wording, images, or lines verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly present — e.g. "a celebration," "a journey," "a storm" — but never in the material's own phrasing.)
+- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening and what it means.
+- Start naturally: "This ${m.thing} is about…" or "The ${m.thing} follows…" or "At its center, this ${m.thing}…"
+- Cover: the situation/scene, the central wound or driving feeling, and the core tension or claim.
 
 FAITH & RELIGION HANDLING:
-- When the underlying material touches Christianity or any faith, handle it respectfully and accurately in what you instruct ChatGPT to write — report its stance without endorsing, mocking, or arguing against the faith.
-- Never invert the material's moral or spiritual stance in the prompt you write.
+- When the material touches Christianity or any faith, describe it respectfully and accurately. Report what it does without endorsing, mocking, or arguing against the faith.
+- Do NOT add commentary that disparages Christianity, God, scripture, or believers. You are reading the material, not editorializing about religion.
+- If it depicts sin, rebellion, doubt, or turning from faith, name that plainly as the subject — do not celebrate it, soften it, or frame the faith itself as the problem.
+- Never invert the material's moral or spiritual stance. If it treats faith as real and weighty, your read does too.
 
-THE ENGINEERED PROMPT YOU WRITE MUST GIVE CHATGPT:
-
-1. THE EMOTIONAL SITUATION — Restate the emotional situation and wound in fresh language, grounded only in the abstraction you were given.
-
-2. THE GOVERNING CONCEPTUAL SYSTEM (if the transfer engine is DIRECT, omit this section entirely and silently — do not mention that a conceptual system was considered, skipped, or omitted; the prompt should simply read as if this section never existed) — Hand the songwriter ONE coherent conceptual universe — the transfer engine — through which to express the wound. Explain the parts of its mechanics that are useful for the song — its vocabulary, actions, consequences, transformations — without supplying finished lyric lines. It must function as the song's primary metaphorical language, not mere decoration. Be specific about how the system works — vague conceptual language is as much a failure as an absent one. Include this exact sentence in the prompt: "The governing metaphor should not merely decorate the song; it should govern how the song thinks." Also include this exact instruction: "Conceptual vocabulary must remain immediately understandable in context. Prefer familiar words used in surprising relationships over obscure technical terminology. Never display research, jargon, or vocabulary knowledge at the expense of emotional immediacy or singability."
-
-3. THE SONG'S CRAFT MECHANICS — Translate Craft DNA into concrete behavioral instructions for how this song should function: how its central idea should move, intensify, withhold, recontextualize, or resolve; whether the speaker should change or remain fixed; how directly or implicitly it should communicate; how repetition, if used, should evolve in meaning. These are instructions about HOW the song behaves, never about WHAT specifically happens in it, and never about matching a style, artist, or the source's own phrasing.
-
-4. THE CENTRAL PARADOX — Describe the emotional contradiction the song should revolve around. Do NOT write the hook yourself. Instruct ChatGPT to discover a concise lyrical expression of that contradiction.
-
-5. EMOTIONAL PROGRESSION — Require the song to progress emotionally: establish the conflict (and, if there is a governing conceptual system, its rules); complicate it or reveal its consequences; transform through a realization, reversal, confession, or consequence that changes how the listener understands what came before; return to the central hook with deeper or altered meaning because of that shift. State explicitly that this describes an emotional progression, not a mandatory section count — Verse 1 / Verse 2 / Bridge / Final Chorus is a useful default, not an absolute template. The song may omit a pre-chorus, breakdown, post-chorus, outro, or even a second verse when it isn't needed. Every section it does include must earn its place.
-
-6. HOOK REQUIREMENTS — do not write the hook yourself, leave that discovery to ChatGPT. Require one simple, rhythmically tight, instantly repeatable central hook that: contains or implies the central paradox; is comfortably singable in one breath; uses natural spoken stress; feels inevitable after one hearing; becomes more meaningful as the song develops; favors emotional compression over explanation.
-
-7. HUMAN FRACTURE (optional, not formulaic) — Include this instruction near-verbatim: "When the emotional architecture supports it, seek one brief human-fracture moment where the governing conceptual language falls away and the speaker says something direct, exposed, and unmistakably human. Do not force this moment into every song. Its effectiveness depends on feeling unexpected rather than structurally mandatory." Do not supply the fracture line, do not require profanity, and do not mandate that it fall in the bridge — let the song determine whether and where it belongs, if anywhere.
-
-8. ORIGINALITY TEST — Include these exact instructions: "The strongest lines should feel inseparable from this song's emotional wound and conceptual system. If a line could be transplanted unchanged into ten unrelated emotional songs, rewrite it." and "Seek lines that create the feeling: I've felt that, but I've never heard it said that way." and "Do not confuse originality with complexity. The best line may contain ordinary words arranged around an extraordinary emotional relationship." and "Prefer emotional inevitability over visible cleverness." Clarify that none of this is permission to become obscure or excessively literary.
-
-9. RESTRAINT — Require ChatGPT to: trust implication; avoid explaining metaphors immediately after using them; avoid repeatedly explaining the speaker's psychology; avoid making the bridge a thesis statement; avoid stacking unrelated metaphors; avoid generic emotional filler; avoid forcing a recovery or empowerment arc; allow unresolved wounds to remain unresolved; avoid cliché merely for rhyme or drama. Discourage automatic reliance on stock AI-song vocabulary such as scars, ashes, demons, ghosts, chains, broken glass, drowning, storms, walls, masks, echoes, blood, bones, fire, "war inside my head," "screaming into silence," and similar — note these are not absolute banned words, only that they should appear solely when genuinely earned.
-
-10. IMAGERY — Do not ban imagery outright. Include this instruction: "Use imagery when it grows naturally from the governing conceptual system. Do not insert unrelated physical or domestic details merely to make the lyric appear specific or cinematic." When the transfer engine is DIRECT, note that imagery may still appear, but it must materially deepen the emotional situation rather than function as decorative scene-setting.
-
-11. RHYTHM AND SINGABILITY — Include: "Keep corresponding lines rhythmically compatible without mechanically forcing identical syllable counts." Also require: natural spoken stress; chorus lines comfortably singable in one breath; avoidance of awkward consonant clusters; avoidance of excessive multisyllabic density; never use unnatural grammar or word order merely to force rhyme; rhyme should serve the emotional phrase rather than dictate it; prioritize how the lyric feels in the mouth over how literary it looks on the page.
-
-12. NO LYRIC INTRO — Include this exact instruction: "Begin directly with Verse 1. Do not write a spoken intro, whispered opening sentence, lyrical preamble, thesis statement, or isolated introductory lines before Verse 1." Note that an instrumental intro may still exist musically, but the lyric output itself must begin with Verse 1.
-
-13. STRUCTURE — Require Suno-compatible section tags with performance direction inside the brackets, e.g. "[Verse 1 — intimate, restrained vocals]", "[Pre-Chorus — tension building]", "[Chorus — wide, melodic, full voice]", "[Bridge — stripped, exposed]", "[Breakdown — crushing, desperate]", "[Final Chorus — massive, unresolved]". No section should appear merely because it exists on this list — include only what this specific song's emotional needs require.
-
-14. OUTPUT — The prompt must tell ChatGPT to: write a complete original song; preserve the emotional meaning of the abstraction rather than arbitrarily inverting it; format sections for Suno; output only the finished lyrics and section tags; provide no explanation, notes, grading, or commentary.
-
-Do NOT pre-write the song. Do not generate suggested killer lines, chorus lyrics, rhyme pairs, or completed metaphors anywhere in the prompt you write. Whenever you are about to include a particularly striking metaphorical mapping, emotional revelation, paradoxical phrase, conceptual twist, or narrative consequence, ask whether this is a condition the songwriter needs or a discovery the songwriter should be allowed to make — if it is a discovery, leave it out. Create the CONDITIONS under which ChatGPT discovers those on its own.
-
-Before returning the engineered prompt, silently check: (1) did you accidentally invent backstory or decide an event happened that isn't in the abstraction? (2) did you pre-assign too many metaphorical roles instead of leaving mappings for the songwriter to discover? (3) did you tell the songwriter what a verse or bridge should literally say instead of what it should accomplish emotionally? (4) did you accidentally create a killer line, hook, conceptual twist, or revelation ChatGPT should discover itself? (5) is the governing system specific enough to create coherent language and logic, without being vague? (6) have you given the songwriter the physics of the world rather than the plot of the song? (7) could the final prompt be traced back to the original source? (8) does the prompt still leave genuine creative discovery for ChatGPT? (9) did the Craft DNA materially shape this prompt beyond just supplying a theme — would a substantially different source with a similar theme plausibly have produced a meaningfully different prompt? Do not output this checklist — only the engineered prompt text below.
-
-QUALITY GATE: A songwriter who pastes this prompt into ChatGPT with zero other context should get back a finished, singable, original song built on this material's real emotional wound and paradox, carrying the transfer engine's logic when one was given and behaving the way Craft DNA describes — with no way to trace it back to whatever inspired it. Be specific about the system. Be specific about the craft mechanics. Be open about the actual song.
-
-Return ONLY the engineered prompt text, ready to paste into ChatGPT. No preamble, no headers, no markdown fencing.`;
+QUALITY GATE: A reader who has never encountered this ${m.thing} should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its wording. If your paragraph would fit a different piece equally well, it failed. If it could only describe this one, it passed.`;
 }
 
-// Pass 2 receives ONLY the structural abstraction below — never the original
-// source text, title, source metadata, or Source Engine. This is a deliberate
-// abstraction barrier: Pass 1 is the sole model pass that ever sees the source
-// material. Craft DNA is the one layer that deliberately crosses the barrier —
-// it is pre-stripped of topic, imagery, vocabulary, and genre by Pass 1.
-function buildPromptUser(structure, m) {
+function buildConceptPrompt(text, title, source, structure, m) {
   const parts = [];
-  parts.push(`STRUCTURAL ABSTRACTION (this is everything you have — no source text, title, names, or Source Engine):
-Setting: ${structure.setting}
-Posture: ${structure.posture}
-Central object/action: ${structure.object}
-Core tension/claim: ${structure.contradiction}
-Emotional wound: ${structure.wound || '(not provided)'}
-Central paradox: ${structure.paradox || '(not provided)'}
-Transfer engine (use this as the governing conceptual system in your prompt, unless it is DIRECT): ${structure.transferEngine || 'DIRECT'}
-Craft DNA — the 3-6 transferable songwriting mechanics that make the source work, already stripped of its topic/imagery/vocabulary/genre (translate these into functional, behavioral guidance for how the song should work — never into style imitation, and never a reason to mention or imply what the source was): ${structure.craftDNA || '(not provided)'}`);
-  parts.push(`\nWrite the engineered ChatGPT prompt now, for a song inspired by this abstraction. No preamble. No label. Just the prompt text.`);
+  if(title) parts.push(`Title: ${title}`);
+  if(source) parts.push(`Source: ${source}`);
+  parts.push(`\nSTRUCTURAL READ:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
+  parts.push(`\n${m.unitLabel} (read closely — describe what it's about, but never quote or reuse its wording):\n${text}`);
+  parts.push(`\nWrite one paragraph describing what this ${m.thing} is about. No preamble. No label. Just the paragraph.`);
   return parts.join('\n');
 }
 
@@ -565,7 +513,7 @@ async function runWithRetry(system, user, maxTokens=400, stageLabel='') {
 function cleanOutput(text) {
   return text
     .replace(/^["'""„]+|["'""]+$/g, '')
-    .replace(/^(SONG PROMPT|ENGINEERED PROMPT|PROMPT|OUTPUT)[:\s]*/i, '')
+    .replace(/^(WHAT THIS IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
     .trim();
 }
 
@@ -590,7 +538,7 @@ function setSpinner(on) {
   $('spinner').classList.toggle('active', on);
 }
 
-function copyText(text, btn, label='Copy prompt') {
+function copyText(text, btn, label='Copy summary') {
   const done = () => {
     btn.textContent = 'Copied ✓';
     setTimeout(() => btn.textContent = label, 2200);
@@ -638,7 +586,8 @@ function renderResults() {
 }
 
 function buildResultEl(entry, old) {
-  const wc = wordCount(entry.songPrompt);
+  const wc = wordCount(entry.concept);
+  const inRange = wc >= 85 && wc <= 135;
   const typeLabel = MEDIA[entry.type || 'song'].label;
 
   const el = document.createElement('div');
@@ -650,29 +599,24 @@ function buildResultEl(entry, old) {
       Setting: ${entry.structure.setting || '—'}<br>
       Posture: ${entry.structure.posture || '—'}<br>
       Central object/action: ${entry.structure.object || '—'}<br>
-      Core tension/claim: ${entry.structure.contradiction || '—'}<br>
-      Emotional wound: ${entry.structure.wound || '—'}<br>
-      Central paradox: ${entry.structure.paradox || '—'}<br>
-      Source engine: ${entry.structure.sourceEngine || entry.structure.conceptEngine || '—'}<br>
-      Transfer engine: ${entry.structure.transferEngine || '—'}<br>
-      Craft DNA: ${entry.structure.craftDNA || '—'}
+      Core tension/claim: ${entry.structure.contradiction || '—'}
     </div>` : '';
 
   el.innerHTML = `
     <div class="r-head">
-      <span class="r-label">${old ? 'Previous read' : "ChatGPT Song Prompt"}<span class="r-type">${typeLabel}</span></span>
+      <span class="r-label">${old ? 'Previous read' : "What this is about"}<span class="r-type">${typeLabel}</span></span>
       <div class="r-meta">${entry.title ? `<span>${entry.title}</span><br>` : ''}${entry.ts}</div>
     </div>
     ${structureHTML}
-    <div class="prompt-box"></div>
-    <span class="word-badge">${wc} words</span>
+    <div class="concept-box"></div>
+    <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
     <div class="btnrow">
-      <button class="mini copy-btn">Copy prompt</button>
+      <button class="mini copy-btn">Copy summary</button>
       ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
     </div>`;
 
-  el.querySelector('.prompt-box').textContent = entry.songPrompt;
-  el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.songPrompt, ev.target));
+  el.querySelector('.concept-box').textContent = entry.concept;
+  el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.concept, ev.target));
   if(!old) {
     el.querySelector('.discard-btn').addEventListener('click', () => {
       history.pop();
@@ -704,7 +648,7 @@ $('go').addEventListener('click', async () => {
   let stage = 'structure read';
   try {
     // Pass 1: structure
-    const rawStructure = await runWithRetry(structureSystem(m), buildStructurePrompt(text, title, source, m), 650, 'structure read');
+    const rawStructure = await runWithRetry(structureSystem(m), buildStructurePrompt(text, title, source, m), 250, 'structure read');
     let structure;
     try {
       structure = parseStructure(rawStructure);
@@ -712,17 +656,16 @@ $('go').addEventListener('click', async () => {
       throw new Error('Could not read the structure JSON. The model returned something unexpected — try again.');
     }
 
-    stage = 'song prompt';
-    setStatus('Engineering the ChatGPT prompt…', '');
+    stage = 'summary';
+    setStatus('Writing what it\'s about…', '');
 
-    // Pass 2: engineered ChatGPT song-writing prompt — receives only the
-    // structural abstraction above, never the raw source text or title/source.
-    const rawPrompt = await runWithRetry(promptSystem(m), buildPromptUser(structure, m), 1400, 'song prompt');
-    const songPrompt = cleanOutput(rawPrompt);
+    // Pass 2: what it's about
+    const rawConcept = await runWithRetry(conceptSystem(m), buildConceptPrompt(text, title, source, structure, m), 400, 'summary');
+    const concept = cleanOutput(rawConcept);
 
     const now = new Date();
     history.push({
-      songPrompt,
+      concept,
       structure,
       title: title || null,
       type: currentType,
