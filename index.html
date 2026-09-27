@@ -45,6 +45,7 @@ details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(
 .out .fld:last-child{margin-bottom:0}
 .out h2+.fld{margin-top:0}
 .dna{border-color:var(--accent)}
+.gpt{border-color:var(--accent2)}
 .badge{display:inline-block;font:600 11px var(--mono);padding:3px 8px;border-radius:6px;margin-right:6px}
 .badge.ok{background:rgba(60,255,177,.12);color:var(--ok)}
 .badge.warn{background:rgba(255,177,60,.14);color:var(--warn)}
@@ -60,7 +61,7 @@ details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(
 </head>
 <body>
 <div class="wrap">
-  <h1>Theme <span>Decoder</span> <span class="small" style="color:var(--dim)">v1.1</span></h1>
+  <h1>Theme <span>Decoder</span> <span class="small" style="color:var(--dim)">v1.2</span></h1>
   <div class="sub">Reverse-engineer a song. Get the theme back in cover — never by name.</div>
 
   <div class="card">
@@ -376,6 +377,19 @@ function render(d, meta){
   <div class="card out">
     <h2>Original song directive</h2><p class="fld">${esc(directive)}</p>
   </div>
+  <div class="card out gpt">
+    <h2>ChatGPT prompt</h2>
+    <label for="bandIn">In the style of (optional)</label>
+    <input type="text" id="bandIn" placeholder="Band or artist name">
+    <button class="btn" id="makePrompt">Make ChatGPT prompt</button>
+    <div id="promptWrap" style="display:none">
+      <textarea id="promptOut" readonly style="margin-top:12px;min-height:220px;font-size:13px"></textarea>
+      <div class="copyrow" style="margin-top:8px">
+        <button class="btn ghost" id="copyPrompt">Copy prompt</button>
+        <button class="btn ghost" id="openGpt">Copy + open ChatGPT</button>
+      </div>
+    </div>
+  </div>
   <div class="card out">
     <div class="copyrow">
       <button class="btn ghost" id="copyTheme">Copy theme + seed</button>
@@ -390,7 +404,56 @@ function render(d, meta){
   const allTxt = `EMOTIONAL WOUND:\n${f.wound}\n\nCENTRAL CONTRADICTION:\n${f.contradiction}\n\nSPEAKER POSTURE:\n${f.posture}\n\nEMOTIONAL DELIVERY:\n${f.delivery}\n\nHOOK FUNCTION:\n${f.hook_function}\n\nVERSE FUNCTION:\n${f.verse_function}\n\nTURN:\n${f.turn}\n\nENDING BEHAVIOR:\n${f.ending}\n\nCORE SONG DNA:\n${f.dna}\n\nORIGINAL SONG DIRECTIVE:\n${directive}`;
   $("copyTheme").onclick = () => copy(themeTxt, "copyTheme");
   $("copyAll").onclick = () => copy(allTxt, "copyAll");
+
+  $("bandIn").value = ls.get("theme_decoder_band","");
+  $("bandIn").oninput = () => ls.set("theme_decoder_band", $("bandIn").value.trim());
+  $("makePrompt").onclick = () => {
+    $("promptOut").value = buildGptPrompt(d, allTxt, $("bandIn").value.trim());
+    $("promptWrap").style.display = "";
+  };
+  $("copyPrompt").onclick = () => copy($("promptOut").value, "copyPrompt");
+  $("openGpt").onclick = () => {
+    const p = $("promptOut").value;
+    copy(p, "openGpt");
+    window.open("https://chatgpt.com/?q=" + encodeURIComponent(p), "_blank");
+  };
   $("results").scrollIntoView({behavior:"smooth"});
+}
+
+function buildGptPrompt(d, brief, band){
+  const theme = [clean(d.oblique_theme), clean(d.logline)].filter(Boolean).join(" ");
+  const avoid = [...document.querySelectorAll("#avoidChips .chip.on")].map(c => c.dataset.v);
+  const extra = $("extraBan").value.split(",").map(x => x.trim()).filter(Boolean);
+  const banned = [...BASE_BANNED, ...extra];
+
+  const style = band ? `
+
+STYLE:
+Write in the style of ${band}. Capture their lyrical sensibility — diction, density, attitude, rhythm of phrasing, how directly or obliquely they deliver emotion, and the kind of imagery they reach for. Do not borrow their actual lyrics, titles, signature phrases, or recognizable lines. It should sound like it belongs in their catalog, not like it was pulled from it.` : "";
+
+  return `Write a lyrical masterpiece using this theme:
+
+${theme}
+
+Use the DNA brief below as the engine of the song.
+
+--- DNA BRIEF ---
+${brief}
+--- END BRIEF ---${style}
+
+RULES:
+- Never name the theme directly. Let the listener feel it before they can name it.
+- Show emotion through concrete, physical detail: a body, an involuntary gesture, a specific object.
+- Every line must earn its place. No filler, no generic rhymes, no greeting-card phrasing.
+- No "not X, just Y" constructions.
+- Do not use these words: ${banned.join(", ")}.${avoid.length ? `
+- Avoid these images and patterns: ${avoid.join("; ")}.` : ""}
+- Write for singing: natural stresses, open vowels on held notes, clear breath points.
+
+FORMAT (for Suno):
+- Section tags in square brackets, with vocal/production direction inside the same bracket, e.g. [Verse 1 — intimate, restrained vocals]
+- Include [Intro], verses, [Pre-Chorus] if it helps, [Chorus], [Bridge], and [Outro] as the song needs.
+- Output the title, then the lyrics only. No commentary.`;
 }
 function copy(t, id){
   navigator.clipboard.writeText(t).then(() => { const b = $(id), o = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = o, 1200); });
