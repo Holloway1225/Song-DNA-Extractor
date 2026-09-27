@@ -1,690 +1,395 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Concept Reader · v2.0</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Theme Decoder</title>
 <style>
-  :root{
-    --bg:#07090c;
-    --panel:#0d1116;
-    --panel-2:#11161d;
-    --line:#1d2630;
-    --line-bright:#2a3542;
-    --cyan:#39e6e0;
-    --cyan-dim:#1b8c89;
-    --cyan-faint:rgba(57,230,224,0.08);
-    --red:#ff3b4e;
-    --red-faint:rgba(255,59,78,0.08);
-    --text:#cdd6df;
-    --muted:#6b7986;
-    --muted2:#4a5560;
-    --white:#f4f8fb;
-    --amber:#f0a83a;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;}
-  body{
-    min-height:100vh;
-    padding:28px 16px 90px;
-    background-image:
-      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(57,230,224,0.07), transparent),
-      radial-gradient(ellipse 50% 35% at 90% 100%, rgba(255,59,78,0.05), transparent);
-  }
-  body::after{
-    content:"";position:fixed;inset:0;pointer-events:none;z-index:999;
-    background:repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 4px);
-    mix-blend-mode:overlay;opacity:.6;
-  }
-
-  .wrap{max-width:700px;margin:0 auto;}
-
-  header{text-align:center;margin-bottom:10px;}
-  .kicker{font-size:10px;letter-spacing:.5em;color:var(--cyan-dim);text-transform:uppercase;margin-bottom:16px;}
-  h1{font-family:'Major Mono Display',monospace;font-size:clamp(20px,5.5vw,34px);color:var(--white);letter-spacing:.05em;line-height:1.05;text-shadow:0 0 22px rgba(57,230,224,0.28);}
-  .glitch{position:relative;display:inline-block;}
-  .glitch::before,.glitch::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden;}
-  .glitch::before{color:var(--red);transform:translate(-2px,0);clip-path:inset(0 0 55% 0);opacity:0;animation:g1 7s infinite steps(1);}
-  .glitch::after{color:var(--cyan);transform:translate(2px,0);clip-path:inset(55% 0 0 0);opacity:0;animation:g2 7s infinite steps(1);}
-  @keyframes g1{0%,96%,100%{opacity:0}97%{opacity:.85}97.4%{opacity:0}}
-  @keyframes g2{0%,93%,100%{opacity:0}94%{opacity:.85}94.4%{opacity:0}}
-  .sub{color:var(--muted);font-size:11px;margin-top:14px;letter-spacing:.07em;line-height:1.6;}
-  .sub b{color:var(--text);}
-
-  .type-row{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;justify-content:center;}
-  .type-btn{
-    background:var(--panel);border:1px solid var(--line);color:var(--muted);
-    font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
-    padding:9px 16px;border-radius:8px;cursor:pointer;transition:.15s;
-  }
-  .type-btn:hover{border-color:var(--cyan-dim);color:var(--text);}
-  .type-btn.active{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-faint);box-shadow:0 0 14px rgba(57,230,224,0.18);}
-
-  .card{
-    background:linear-gradient(170deg,var(--panel) 0%,var(--panel-2) 100%);
-    border:1px solid var(--line);border-radius:14px;padding:20px;margin-top:20px;
-    position:relative;overflow:hidden;
-  }
-  .card::before{
-    content:"";position:absolute;top:0;left:20px;right:20px;height:1px;
-    background:linear-gradient(90deg,transparent,var(--cyan-dim),transparent);opacity:.55;
-  }
-  .card-label{
-    font-size:10px;letter-spacing:.3em;text-transform:uppercase;
-    color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;
-  }
-  .char-count{font-size:10px;color:var(--muted2);font-style:italic;letter-spacing:.05em;}
-  textarea{
-    width:100%;min-height:240px;resize:vertical;
-    background:#05070a;border:1px solid var(--line);border-radius:10px;
-    color:var(--text);font-family:'Space Mono',monospace;font-size:13.5px;line-height:1.65;
-    padding:14px;outline:none;transition:border-color .2s,box-shadow .2s;
-  }
-  textarea:focus{border-color:var(--cyan-dim);box-shadow:0 0 0 1px rgba(27,140,137,0.4);}
-  textarea::placeholder{color:#2e3d4a;}
-
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-  .in{
-    background:#05070a;border:1px solid var(--line);border-radius:10px;
-    color:var(--text);font-family:'Space Mono',monospace;font-size:12px;
-    padding:11px 13px;outline:none;width:100%;transition:border-color .2s;
-  }
-  .in:focus{border-color:var(--cyan-dim);}
-  .in::placeholder{color:#2e3d4a;}
-
-  button.go{
-    width:100%;margin-top:16px;padding:15px;border:none;border-radius:10px;cursor:pointer;
-    font-family:'Major Mono Display',monospace;font-size:13px;letter-spacing:.15em;text-transform:uppercase;
-    color:#03191a;
-    background:linear-gradient(90deg,var(--cyan) 0%,#7ff5f0 50%,var(--cyan) 100%);
-    background-size:200% 100%;
-    transition:transform .12s,box-shadow .2s,opacity .2s,background-position .4s;
-    box-shadow:0 0 28px rgba(57,230,224,0.28);
-  }
-  button.go:hover:not(:disabled){
-    transform:translateY(-1px);
-    box-shadow:0 0 42px rgba(57,230,224,0.5);
-    background-position:100% 0;
-  }
-  button.go:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-
-  .status-row{display:flex;align-items:center;justify-content:center;gap:10px;min-height:26px;margin-top:14px;}
-  .spinner{width:14px;height:14px;border:2px solid var(--cyan-dim);border-top-color:var(--cyan);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:none;}
-  .spinner.active{display:block;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .status{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);}
-  .status.err{color:var(--red);}
-  .status.warn{color:var(--amber);}
-
-  .draft-note{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);text-align:center;margin-top:8px;display:none;}
-  .draft-note.active{display:block;}
-
-  .results{margin-top:6px;}
-  .result{
-    background:linear-gradient(170deg,var(--panel),#0a0e13);
-    border:1px solid var(--line);border-left:3px solid var(--cyan);
-    border-radius:12px;padding:18px 18px 14px 20px;margin-top:16px;
-    animation:rise .45s cubic-bezier(.22,.61,.36,1) both;
-    box-shadow:0 4px 32px rgba(57,230,224,0.08);
-    position:relative;
-  }
-  .result.old{border-left-color:var(--muted2);opacity:.72;}
-  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-  .r-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
-  .r-label{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);}
-  .result.old .r-label{color:var(--muted);}
-  .r-meta{font-size:10px;color:var(--muted2);text-align:right;line-height:1.5;}
-  .r-type{display:inline-block;margin-left:8px;padding:2px 7px;border-radius:4px;font-size:9px;letter-spacing:.15em;text-transform:uppercase;border:1px solid var(--line-bright);color:var(--muted);}
-
-  .structure-box{
-    background:#0a0e13;border:1px dashed var(--line-bright);border-radius:10px;
-    padding:12px 14px;font-size:11.5px;line-height:1.75;color:var(--muted);
-    margin-bottom:12px;
-  }
-  .structure-box .lab{color:var(--cyan-dim);letter-spacing:.2em;font-size:9px;text-transform:uppercase;display:block;margin-bottom:6px;}
-
-  .concept-box{
-    background:#05070a;border:1px dashed var(--line);border-radius:10px;
-    padding:15px 16px;font-size:13.5px;line-height:1.8;color:var(--text);white-space:pre-wrap;
-  }
-  .result.old .concept-box{color:var(--muted);}
-
-  .word-badge{
-    display:inline-block;margin-top:8px;padding:3px 9px;border-radius:5px;
-    font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-    background:var(--cyan-faint);border:1px solid var(--cyan-dim);color:var(--cyan-dim);
-  }
-  .word-badge.warn{background:rgba(240,168,58,0.08);border-color:var(--amber);color:var(--amber);}
-
-  .btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
-  .mini{
-    background:transparent;border:1px solid var(--line);color:var(--muted);
-    font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
-    padding:7px 13px;border-radius:7px;cursor:pointer;transition:.15s;
-  }
-  .mini:hover{border-color:var(--cyan-dim);color:var(--cyan);}
-  .mini.danger:hover{border-color:var(--red);color:var(--red);}
-  .mini:disabled{opacity:.4;cursor:not-allowed;}
-
-  .hist-label{
-    font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted2);
-    text-align:center;margin-top:22px;padding-bottom:6px;
-    border-bottom:1px solid var(--line);
-  }
-
-  details.crit{margin-top:24px;border:1px solid var(--line);border-radius:10px;background:var(--panel);}
-  summary{cursor:pointer;padding:13px 16px;font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);list-style:none;}
-  summary::-webkit-details-marker{display:none}
-  summary::before{content:"▸  ";color:var(--cyan-dim);}
-  details[open] summary::before{content:"▾  ";}
-  .crit-body{padding:0 16px 16px;font-size:12px;line-height:1.75;color:var(--muted);}
-  .crit-body b{color:var(--text);}
-  .crit-body .ex{
-    margin-top:12px;background:#05070a;border-left:3px solid var(--cyan-dim);
-    border-radius:0 8px 8px 0;padding:11px 14px;font-size:12px;line-height:1.7;
-    color:var(--muted);font-style:italic;
-  }
-
-  .keybar{margin-top:24px;text-align:center;font-size:10px;color:var(--muted);letter-spacing:.06em;line-height:1.6;}
-  .keybar .key-inputs{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center;}
-  .keybar input{
-    background:#05070a;border:1px solid var(--line);border-radius:8px;
-    color:var(--text);font-family:'Space Mono',monospace;font-size:11px;
-    padding:9px 12px;width:220px;transition:border-color .2s;
-  }
-  .keybar input:focus{outline:none;border-color:var(--cyan-dim);}
-
-  footer{text-align:center;margin-top:36px;color:#2e3d4a;font-size:10px;letter-spacing:.35em;text-transform:uppercase;}
-
-  @media(max-width:560px){
-    .grid2{grid-template-columns:1fr}
-    .keybar input{width:100%;max-width:340px}
-  }
+:root{
+  --bg:#0b0b0d; --panel:#141418; --panel2:#1b1b21; --line:#2a2a33;
+  --text:#e8e6e3; --dim:#8d8b93; --accent:#b8ff3c; --accent2:#ff3c8e; --warn:#ffb13c; --ok:#3cffb1;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:16px;padding-bottom:60px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-family:var(--mono);font-size:20px;letter-spacing:.08em;margin:4px 0 2px;text-transform:uppercase}
+h1 span{color:var(--accent)}
+.sub{color:var(--dim);font-size:13px;margin-bottom:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:10px 0 6px}
+label:first-child{margin-top:0}
+input[type=text],input[type=password],textarea,select{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit;font-size:16px}
+textarea{min-height:180px;resize:vertical}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;background:none;border:0;color:var(--dim);padding:10px 6px;font:600 13px/1 var(--mono);cursor:pointer}
+.seg button.on{background:var(--accent);color:#000}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:6px 11px;font-size:13px;cursor:pointer;user-select:none}
+.chip.on{border-color:var(--accent2);color:var(--accent2)}
+.btn{display:block;width:100%;background:var(--accent);color:#000;border:0;border-radius:10px;padding:14px;font:700 15px var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;margin-top:14px}
+.btn:disabled{opacity:.4}
+.btn.ghost{background:none;color:var(--text);border:1px solid var(--line);font-size:12px;padding:10px;margin-top:8px}
+.small{font-size:12px;color:var(--dim)}
+details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+#status{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:10px;min-height:16px}
+#status.err{color:var(--accent2)}
+.out h2{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+.big{font-size:18px;line-height:1.45}
+.logline{font-style:italic;color:var(--text);border-left:3px solid var(--accent2);padding-left:10px;margin-top:10px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;font-size:14px}
+.kv div:nth-child(odd){font-family:var(--mono);font-size:11px;text-transform:uppercase;color:var(--dim);padding-top:2px}
+ul.img{margin:0;padding-left:18px}
+.badge{display:inline-block;font:600 11px var(--mono);padding:3px 8px;border-radius:6px;margin-right:6px}
+.badge.ok{background:rgba(60,255,177,.12);color:var(--ok)}
+.badge.warn{background:rgba(255,177,60,.14);color:var(--warn)}
+.badge.m{background:var(--panel2);color:var(--dim)}
+.reveal{filter:blur(7px);transition:filter .2s;cursor:pointer;font-family:var(--mono);color:var(--accent2)}
+.reveal.shown{filter:none}
+.copyrow{display:flex;gap:8px}
+.copyrow .btn{margin-top:0}
+.hist-item{padding:10px 0;border-top:1px solid var(--line);cursor:pointer;font-size:13px}
+.hist-item:first-child{border-top:0}
+.hist-item b{font-family:var(--mono);font-weight:600}
 </style>
 </head>
 <body>
 <div class="wrap">
-
-  <header>
-    <div class="kicker">Signal Tools · v2.0</div>
-    <h1><span class="glitch" data-t="CONCEPT READER">CONCEPT READER</span></h1>
-    <p class="sub">Paste lyrics, a movie or show scene, or a book excerpt → get back <b>what it's actually about</b>, in fresh words — its structure, its wound, and the tension underneath it.</p>
-  </header>
-
-  <div class="type-row" id="typeRow"></div>
+  <h1>Theme <span>Decoder</span> <span class="small" style="color:var(--dim)">v1.0</span></h1>
+  <div class="sub">Reverse-engineer a song. Get the theme back in cover — never by name.</div>
 
   <div class="card">
-    <div class="card-label">
-      <span id="unitLabel">Source Text</span>
-      <span class="char-count" id="lyricCount">0 words</span>
-    </div>
-    <textarea id="lyrics" placeholder=""></textarea>
-
-    <div class="grid2">
-      <input id="songTitle" class="in" type="text" placeholder="" />
-      <input id="artistRef" class="in" type="text" placeholder="" />
+    <label>Source</label>
+    <div class="seg" id="modeSeg">
+      <button class="on" data-mode="lyrics">Paste lyrics</button>
+      <button data-mode="title">Title + artist</button>
     </div>
 
-    <button class="go" id="go">Read it</button>
-
-    <div class="status-row">
-      <div class="spinner" id="spinner"></div>
-      <div class="status" id="status"></div>
+    <div id="lyricsBox">
+      <label for="lyrics">Lyrics</label>
+      <textarea id="lyrics" placeholder="Paste the full song…"></textarea>
     </div>
-    <div class="draft-note" id="draft-note">◈ Text auto-saved — a timeout won't lose it.</div>
+    <div id="titleBox" style="display:none">
+      <div class="row">
+        <div><label for="title">Title</label><input type="text" id="title"></div>
+        <div><label for="artist">Artist</label><input type="text" id="artist"></div>
+      </div>
+      <div class="small" style="margin-top:6px">Relies on the model's recall of the song — pasting lyrics is more accurate.</div>
+    </div>
+
+    <label>Cover depth</label>
+    <div class="seg" id="depthSeg">
+      <button data-depth="veiled">Veiled</button>
+      <button class="on" data-depth="deep">Deep cover</button>
+      <button data-depth="ghost">Ghost</button>
+    </div>
+    <div class="small" id="depthHint" style="margin-top:6px"></div>
+
+    <label>Avoid these patterns</label>
+    <div class="chips" id="avoidChips">
+      <div class="chip on" data-v="mirrors or reflections">Mirrors / reflections</div>
+      <div class="chip on" data-v="frozen stillness">Frozen stillness</div>
+      <div class="chip on" data-v="doors, keys, or locks">Doors / keys / locks</div>
+      <div class="chip on" data-v="performed calm">Performed calm</div>
+    </div>
+
+    <label for="extraBan">Extra banned words (comma separated)</label>
+    <input type="text" id="extraBan" placeholder="e.g. ghost, ashes">
+
+    <button class="btn" id="runBtn">Decode</button>
+    <div id="status"></div>
   </div>
 
-  <div class="results" id="results"></div>
+  <div id="results"></div>
 
-  <details class="crit">
-    <summary>How it works</summary>
-    <div class="crit-body">
-      Pick what kind of material you're pasting — song, movie, TV show, or book — then run it through two passes.<br><br>
-      <b>Pass 1 — Structure read:</b> identifies the actual situation — the setting, the central body's physical posture, the central object or action, and the core contradiction. Shown to you so you can see what the tool is reading from.<br><br>
-      <b>Pass 2 — What it's about:</b> writes a clear paragraph describing what <b>this</b> song, movie, show, or book is about — its situation, its wound, and the tension underneath it — entirely in fresh words. It never quotes the source material, never reuses its distinctive lines or phrasing, and does not invent a different scene. It tells you what the thing you pasted is actually saying.<br><br>
-      Output target: <b>85–135 words</b>, one paragraph, no headings, no bullets.
-      <div class="ex">"This song is about someone who keeps showing up to a celebration they no longer believe in, holding a drink they won't raise and a smile that's costing them. The thing they once organized their whole life around turned out to be hollow, and it failed so gradually they can't name the moment it broke. The tension is that they keep attending the rituals anyway — because leaving would mean admitting the loss is total — even though every polite exchange confirms exactly that. The song sits in the gap between the loyalty they perform and the conviction that quietly left them."</div>
-    </div>
-  </details>
-
-  <div class="keybar">
-    Running on GitHub Pages? Keys are stored only in this browser.<br>
-    <div class="key-inputs">
-      <input id="anthropicKey" type="password" placeholder="Anthropic API key (primary)" />
-      <input id="groqKey" type="password" placeholder="Groq API key (fallback)" />
-    </div>
+  <div class="card">
+    <details>
+      <summary>API keys</summary>
+      <label for="kGroq">Groq (primary)</label>
+      <input type="password" id="kGroq" placeholder="gsk_…">
+      <label for="kAnth">Anthropic (fallback)</label>
+      <input type="password" id="kAnth" placeholder="sk-ant-…">
+      <button class="btn ghost" id="saveKeys">Save keys</button>
+      <div class="small" style="margin-top:6px">Stored in this browser only (shared Signal Tools keys).</div>
+    </details>
   </div>
 
-  <footer>Version 2.0 · Song / Movie / Show / Book · 2026-08-11</footer>
+  <div class="card">
+    <details>
+      <summary>History</summary>
+      <div id="hist" style="margin-top:10px"></div>
+      <button class="btn ghost" id="clearHist">Clear history</button>
+    </details>
+  </div>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
-const REQUEST_TIMEOUT_MS = 45000;
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+const CLAUDE_MODEL = "claude-sonnet-4-6";
+const BASE_BANNED = ["coffee","café","cafe","morning","dawn","sunrise","signal","system","frequency"];
+const DEPTH = {
+  veiled: "Veiled: the theme should be clear to an attentive reader, just never labeled. Near-literal circling is fine.",
+  deep: "Deep cover: the theme lives in a concrete situation. A reader should feel it before they can name it.",
+  ghost: "Ghost: maximum distance. Only a physical scene remains; the theme is inferable but never close to the surface."
+};
 
-// ── Media types ──
-const MEDIA = {
-  song: {
-    label: 'Song',
-    thing: 'song',
-    unitLabel: 'Song Lyrics',
-    placeholder: 'Paste full lyrics here…',
-    quoteUnit: 'lyrics',
-    titlePh: 'Song title (optional)',
-    srcPh: 'Artist / source (optional)'
+let mode = "lyrics", depth = "deep";
+const $ = id => document.getElementById(id);
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+};
+
+// ---------- UI wiring ----------
+function segWire(id, attr, cb){
+  $(id).querySelectorAll("button").forEach(b => b.onclick = () => {
+    $(id).querySelectorAll("button").forEach(x => x.classList.remove("on"));
+    b.classList.add("on"); cb(b.dataset[attr]);
+  });
+}
+segWire("modeSeg","mode", m => { mode = m; $("lyricsBox").style.display = m==="lyrics"?"":"none"; $("titleBox").style.display = m==="title"?"":"none"; });
+segWire("depthSeg","depth", d => { depth = d; $("depthHint").textContent = DEPTH[d].split(": ")[1]; });
+$("depthHint").textContent = DEPTH.deep.split(": ")[1];
+document.querySelectorAll("#avoidChips .chip").forEach(c => c.onclick = () => c.classList.toggle("on"));
+
+$("kGroq").value = ls.get("key_groq","");
+$("kAnth").value = ls.get("key_anthropic","");
+$("saveKeys").onclick = () => { ls.set("key_groq",$("kGroq").value.trim()); ls.set("key_anthropic",$("kAnth").value.trim()); setStatus("Keys saved."); };
+
+function setStatus(t, err){ $("status").textContent = t; $("status").className = err ? "err" : ""; }
+
+// ---------- Prompting ----------
+function buildSystem(avoid, banned){
+  return `You are a song analyst who reverse-engineers what a song is really about, then hands the theme back IN COVER — without ever naming it.
+
+Work in two steps internally:
+1. Read the song faithfully. Identify its true emotional theme (not its surface topic), the central contradiction, who is speaking to whom, and how the song's structure delivers the feeling.
+2. Re-express that theme without naming it. The oblique fields must NEVER contain the theme label, its synonyms, its obvious emotion words, or a definition of it. Show it through a concrete human situation: a body, an involuntary gesture, a specific object.
+
+Depth setting — ${DEPTH[depth]}
+
+Hard rules:
+- Never quote the source lyrics, not even a phrase. Paraphrase structure only.
+- Never mention the song title or artist in any field.
+- Do not use these words anywhere in the oblique fields: ${banned.join(", ")}.
+- Avoid these images/patterns: ${avoid.length ? avoid.join("; ") : "none"}.
+- No "not X, just Y" constructions.
+- Be specific and physical. No abstractions like "journey", "healing", "the weight of".
+
+Return ONLY valid JSON, no markdown, with exactly this shape:
+{
+  "theme_label": "1-3 words naming the theme plainly (this stays hidden from the user)",
+  "forbidden_words": ["the label words plus 5-10 near-synonyms and obvious emotion words for this theme"],
+  "oblique_theme": "2-3 sentences stating what the song is about without naming it",
+  "logline": "one sentence, a situational logline a songwriter could build from",
+  "seed": {
+    "body": "who, physically, in one short phrase",
+    "gesture": "one involuntary physical gesture",
+    "object": "one specific, ordinary object",
+    "scene": "one sentence placing them in a moment"
   },
-  movie: {
-    label: 'Movie',
-    thing: 'movie',
-    unitLabel: 'Scene / Synopsis / Excerpt',
-    placeholder: 'Paste a scene description, plot synopsis, or dialogue excerpt…',
-    quoteUnit: 'dialogue or narration',
-    titlePh: 'Movie title (optional)',
-    srcPh: 'Director / source (optional)'
+  "engine": {
+    "contradiction": "the tension the song holds without resolving",
+    "pov": "who is speaking",
+    "addressee": "who or what they're speaking to",
+    "arc": "how the speaker's position changes from start to end",
+    "withheld": "what the song deliberately never says out loud"
   },
-  show: {
-    label: 'TV Show',
-    thing: 'show',
-    unitLabel: 'Scene / Synopsis / Excerpt',
-    placeholder: 'Paste an episode synopsis, scene description, or dialogue excerpt…',
-    quoteUnit: 'dialogue or narration',
-    titlePh: 'Show title (optional)',
-    srcPh: 'Episode / source (optional)'
+  "structure": {
+    "hook_job": "what the hook does emotionally",
+    "verses": "what the verses carry",
+    "chorus": "what the chorus carries",
+    "turn": "where and how the song turns (bridge or otherwise)"
   },
-  book: {
-    label: 'Book',
-    thing: 'book',
-    unitLabel: 'Excerpt / Summary',
-    placeholder: 'Paste a passage, chapter summary, or plot synopsis…',
-    quoteUnit: 'prose',
-    titlePh: 'Book title (optional)',
-    srcPh: 'Author / source (optional)'
+  "imagery": ["3-6 image families the song draws from, described generally, not quoted"]
+}`;
+}
+
+function buildUser(){
+  if (mode === "lyrics") return `Song lyrics to analyze:\n\n${$("lyrics").value.trim()}`;
+  return `Analyze the song "${$("title").value.trim()}" by ${$("artist").value.trim()}. Work from what you know of its lyrics and meaning. If you don't recognize the song, set theme_label to "UNKNOWN" and leave the other fields as empty strings.`;
+}
+
+// ---------- Model calls ----------
+async function callGroq(system, user){
+  const key = ls.get("key_groq","");
+  if (!key) throw new Error("no Groq key");
+  const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+key },
+    body: JSON.stringify({ model: GROQ_MODEL, temperature: 0.7, response_format:{type:"json_object"},
+      messages:[{role:"system",content:system},{role:"user",content:user}] })
+  });
+  if (!r.ok) throw new Error("Groq "+r.status+": "+(await r.text()).slice(0,160));
+  const j = await r.json();
+  return j.choices[0].message.content;
+}
+async function callClaude(system, user){
+  const key = ls.get("key_anthropic","");
+  if (!key) throw new Error("no Anthropic key");
+  const r = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "x-api-key":key, "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true" },
+    body: JSON.stringify({ model: CLAUDE_MODEL, max_tokens: 2000, system, messages:[{role:"user",content:user}] })
+  });
+  if (!r.ok) throw new Error("Claude "+r.status+": "+(await r.text()).slice(0,160));
+  const j = await r.json();
+  return j.content.map(c => c.text || "").join("");
+}
+async function callModel(system, user){
+  let lastErr;
+  for (const [name, fn] of [["Groq",callGroq],["Claude",callClaude]]) {
+    try { setStatus(`Decoding via ${name}…`); const raw = await fn(system, user); return { data: parseJSON(raw), via: name }; }
+    catch(e){ lastErr = e; console.warn(name, e); }
+  }
+  throw lastErr || new Error("No model available");
+}
+function parseJSON(raw){
+  let s = raw.trim().replace(/^```(?:json)?/i,"").replace(/```$/,"").trim();
+  const a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if (a < 0 || b < 0) throw new Error("Model didn't return JSON");
+  return JSON.parse(s.slice(a, b+1));
+}
+
+// ---------- Leak check ----------
+function obliqueText(d){
+  return [d.oblique_theme, d.logline, d.seed && d.seed.body, d.seed && d.seed.gesture, d.seed && d.seed.object, d.seed && d.seed.scene].filter(Boolean).join(" \n ");
+}
+function findLeaks(d, banned){
+  const text = obliqueText(d).toLowerCase();
+  const words = new Set();
+  (d.theme_label||"").toLowerCase().split(/[\s\-\/,]+/).filter(w => w.length > 3 && !["the","and","with","from"].includes(w)).forEach(w => words.add(w));
+  (d.forbidden_words||[]).forEach(w => w && words.add(String(w).toLowerCase().trim()));
+  banned.forEach(w => words.add(w.toLowerCase()));
+  const hits = [];
+  words.forEach(w => {
+    if (!w) return;
+    const stem = w.length > 5 ? w.slice(0, w.length - 2) : w; // catches grief/grieving, lonely/loneliness
+    const re = new RegExp("\\b" + stem.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), "i");
+    if (re.test(text)) hits.push(w);
+  });
+  return hits;
+}
+async function repairLeaks(d, hits, system){
+  const fixPrompt = `These fields leaked words that name or point too directly at the theme: ${hits.join(", ")}.
+Rewrite ONLY oblique_theme, logline, and seed so none of those words (or their forms) appear, keeping the same meaning and the same depth. Keep it concrete and physical.
+Return ONLY JSON: {"oblique_theme":"","logline":"","seed":{"body":"","gesture":"","object":"","scene":""}}
+
+Current:
+${JSON.stringify({oblique_theme:d.oblique_theme, logline:d.logline, seed:d.seed})}`;
+  const { data } = await callModel(system, fixPrompt);
+  return Object.assign({}, d, data);
+}
+
+// ---------- Run ----------
+$("runBtn").onclick = async () => {
+  if (mode === "lyrics" && $("lyrics").value.trim().length < 40) return setStatus("Paste the lyrics first.", true);
+  if (mode === "title" && !$("title").value.trim()) return setStatus("Enter a title.", true);
+  if (!ls.get("key_groq","") && !ls.get("key_anthropic","")) return setStatus("Add an API key below first.", true);
+
+  const avoid = [...document.querySelectorAll("#avoidChips .chip.on")].map(c => c.dataset.v);
+  const extra = $("extraBan").value.split(",").map(s => s.trim()).filter(Boolean);
+  const banned = [...BASE_BANNED, ...extra];
+  const system = buildSystem(avoid, banned);
+
+  $("runBtn").disabled = true;
+  try {
+    let { data, via } = await callModel(system, buildUser());
+    if ((data.theme_label||"").toUpperCase() === "UNKNOWN") throw new Error("Model doesn't know that song — paste the lyrics instead.");
+    let hits = findLeaks(data, banned), repaired = false;
+    if (hits.length) {
+      setStatus("Theme leaked — rewriting in cover…");
+      data = await repairLeaks(data, hits, system);
+      hits = findLeaks(data, banned); repaired = true;
+    }
+    const src = mode === "title" ? `${$("title").value.trim()} — ${$("artist").value.trim()}` : ($("lyrics").value.trim().split("\n").find(l => l.trim() && !/^\[/.test(l)) || "Pasted lyrics").slice(0,50);
+    render(data, { via, hits, repaired, depth });
+    saveHist({ src, depth, data, via, hits, repaired, t: Date.now() });
+    setStatus("");
+  } catch(e) {
+    setStatus(e.message || String(e), true);
+  } finally {
+    $("runBtn").disabled = false;
   }
 };
-let currentType = 'song';
 
-function buildTypeRow(){
-  const row = $('typeRow');
-  row.innerHTML = '';
-  Object.keys(MEDIA).forEach(key => {
-    const btn = document.createElement('button');
-    btn.className = 'type-btn' + (key === currentType ? ' active' : '');
-    btn.textContent = MEDIA[key].label;
-    btn.addEventListener('click', () => { currentType = key; applyType(); });
-    row.appendChild(btn);
-  });
-}
-function applyType(){
-  buildTypeRow();
-  const m = MEDIA[currentType];
-  $('unitLabel').textContent = m.unitLabel;
-  $('lyrics').placeholder = m.placeholder;
-  $('songTitle').placeholder = m.titlePh;
-  $('artistRef').placeholder = m.srcPh;
-  $('go').textContent = `Read the ${m.thing}`;
-}
-
-// ── Key persistence ──
-['groqKey','anthropicKey'].forEach(k => {
-  const el = $(k);
-  try { const v = localStorage.getItem('cs_cr_'+k); if(v) el.value = v; } catch(e){}
-  el.addEventListener('input', () => { try { localStorage.setItem('cs_cr_'+k, el.value); } catch(e){} });
-});
-
-// ── Source text draft autosave (survives a timeout / reload) ──
-const DRAFT_KEY = 'cs_cr_text_draft';
-let draftDebounce = null;
-(function restoreDraft(){
-  try{
-    const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved && saved.trim()) {
-      $('lyrics').value = saved;
-      $('draft-note').classList.add('active');
-      const words = saved.trim().split(/\s+/).filter(Boolean).length;
-      $('lyricCount').textContent = words ? `${words} words` : '0 words';
-    }
-  }catch(_){}
-})();
-$('lyrics').addEventListener('input', () => {
-  const words = $('lyrics').value.trim().split(/\s+/).filter(Boolean).length;
-  $('lyricCount').textContent = words ? `${words} words` : '0 words';
-  clearTimeout(draftDebounce);
-  draftDebounce = setTimeout(()=>{
-    try{
-      localStorage.setItem(DRAFT_KEY, $('lyrics').value);
-      $('draft-note').classList.add('active');
-    }catch(_){}
-  }, 400);
-});
-function clearDraft(){
-  try{ localStorage.removeItem(DRAFT_KEY); }catch(_){}
-  $('draft-note').classList.remove('active');
-}
-
-// ── Persisted history (survives reload, max 5) ──
-const HISTORY_KEY = 'cs_cr_history';
-function loadHistory(){ try{ return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); }catch(_){ return []; } }
-function persistHistory(){
-  try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-5))); }catch(_){}
-}
-let history = loadHistory();
-
-// ── PASS 1: Structure extraction ──
-function structureSystem(m) {
-  return `You read ${m.thing} material and extract its underlying STRUCTURE — the actual situation.
-
-Identify exactly these four things from the text below:
-1. SETTING: Where is the central figure, physically, or what is the central scene? One short phrase. Be specific.
-2. POSTURE: What is the central figure's body or stance doing — still, moving, declaring, pleading, working? One short phrase.
-3. CENTRAL OBJECT OR ACTION: The one object, image, or repeated action the material returns to. One short phrase.
-4. CORE CONTRADICTION OR TENSION: The single tension driving it — what is wanted vs. what's happening, or what's believed vs. what's true. If there is no real tension (e.g. a straightforward declaration), state its central claim instead. One sentence.
-
-Read the ${m.thing} as it actually is. Do not invert it, subvert it, or impose a meaning it does not have.
-
-Return ONLY valid JSON, no markdown, no preamble:
-{"setting":"...","posture":"...","object":"...","contradiction":"..."}`;
-}
-
-function buildStructurePrompt(text, title, source, m) {
-  const parts = [];
-  if(title) parts.push(`Title: ${title}`);
-  if(source) parts.push(`Source: ${source}`);
-  parts.push(`\n${m.unitLabel}:\n${text}`);
-  return parts.join('\n');
-}
-
-// ── PASS 2: "What this is about" reader ──
-function conceptSystem(m) {
-  return `You read ${m.thing} material and explain what it is about, in your own fresh words.
-
-TASK: Using the material and the structural read provided, write ONE paragraph that describes what THIS ${m.thing} is actually about — its situation, the wound or feeling underneath it, and the central tension or claim. You are a faithful reader, not a rewriter and not a reinventor.
-
-HARD RULES:
-- Describe the ${m.thing} that was given to you. Do NOT invent a different scene, a different setting, or a different central figure. Stay true to what the material actually shows.
-- Do NOT invert, subvert, or flip its meaning. If it is triumphant, say it is triumphant. If it is grieving, say it is grieving. Read it as it is.
-- Output exactly ONE paragraph, 85–135 words.
-- No headings. No bullets. No numbered lists.
-- NEVER quote the ${m.quoteUnit}. Not a single line, phrase, or title.
-- NEVER reuse the material's distinctive wording, images, or lines verbatim. Put everything in completely fresh language. (You may name a concrete element that is plainly present — e.g. "a celebration," "a journey," "a storm" — but never in the material's own phrasing.)
-- Do not lean on abstract emotional labels alone ("toxic relationship," "emotional journey," "validation," "healing," "inner demons," "broken pieces"). Say what is happening and what it means.
-- Start naturally: "This ${m.thing} is about…" or "The ${m.thing} follows…" or "At its center, this ${m.thing}…"
-- Cover: the situation/scene, the central wound or driving feeling, and the core tension or claim.
-
-FAITH & RELIGION HANDLING:
-- When the material touches Christianity or any faith, describe it respectfully and accurately. Report what it does without endorsing, mocking, or arguing against the faith.
-- Do NOT add commentary that disparages Christianity, God, scripture, or believers. You are reading the material, not editorializing about religion.
-- If it depicts sin, rebellion, doubt, or turning from faith, name that plainly as the subject — do not celebrate it, soften it, or frame the faith itself as the problem.
-- Never invert the material's moral or spiritual stance. If it treats faith as real and weighty, your read does too.
-
-QUALITY GATE: A reader who has never encountered this ${m.thing} should come away knowing what it is genuinely about — its real subject and emotional core — without you having copied any of its wording. If your paragraph would fit a different piece equally well, it failed. If it could only describe this one, it passed.`;
-}
-
-function buildConceptPrompt(text, title, source, structure, m) {
-  const parts = [];
-  if(title) parts.push(`Title: ${title}`);
-  if(source) parts.push(`Source: ${source}`);
-  parts.push(`\nSTRUCTURAL READ:\nSetting: ${structure.setting}\nPosture: ${structure.posture}\nCentral object/action: ${structure.object}\nCore tension/claim: ${structure.contradiction}`);
-  parts.push(`\n${m.unitLabel} (read closely — describe what it's about, but never quote or reuse its wording):\n${text}`);
-  parts.push(`\nWrite one paragraph describing what this ${m.thing} is about. No preamble. No label. Just the paragraph.`);
-  return parts.join('\n');
-}
-
-// ── API calls ──
-function parseText(data) {
-  if(data.content) return (data.content || []).map(b => b.text || '').join('\n').trim();
-  if(data.choices) return data.choices[0].message.content.trim();
-  return '';
-}
-
-function withTimeout(promise, label) {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`${label || 'Request'} timed out after 45s — your input is saved, just try again.`));
-    }, REQUEST_TIMEOUT_MS);
-    promise.then(res => { clearTimeout(timer); resolve(res); })
-           .catch(err => { clearTimeout(timer); reject(err); });
-  });
-}
-
-async function callGroq(system, user, maxTokens=400) {
-  const key = $('groqKey').value.trim();
-  if(!key) throw new Error('no_groq');
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type":"application/json","Authorization":"Bearer "+key },
-    body: JSON.stringify({
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.4,
-      max_tokens: maxTokens,
-      messages: [{ role:"system", content:system },{ role:"user", content:user }]
-    })
-  });
-  if(!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || "groq_"+res.status); }
-  return parseText(await res.json());
-}
-
-async function callClaude(system, user, maxTokens=400) {
-  const key = $('anthropicKey').value.trim();
-  if(!key) throw new Error('no_anthropic');
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type":"application/json",
-      "x-api-key": key,
-      "anthropic-version":"2023-06-01",
-      "anthropic-dangerous-direct-browser-access":"true"
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: maxTokens,
-      temperature: 0.4,
-      system,
-      messages: [{ role:"user", content:user }]
-    })
-  });
-  if(!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e?.error?.message || "claude_"+res.status); }
-  return parseText(await res.json());
-}
-
-async function runWithRetry(system, user, maxTokens=400, stageLabel='') {
-  const attempts = [];
-  if($('anthropicKey').value.trim()) attempts.push(['Claude', () => callClaude(system, user, maxTokens)]);
-  if($('groqKey').value.trim()) attempts.push(['Groq', () => callGroq(system, user, maxTokens)]);
-  if(!attempts.length) throw new Error('No API key found.');
-
-  let lastErr;
-  for(let i = 0; i < attempts.length; i++) {
-    try {
-      return await withTimeout(attempts[i][1](), stageLabel);
-    } catch(e) {
-      lastErr = e;
-      if(i === attempts.length - 1) break;
-      setStatus(`${attempts[i][0]} failed${stageLabel ? ' ('+stageLabel+')' : ''} — trying ${attempts[i+1][0]}…`, 'warn');
-      await new Promise(r => setTimeout(r, 600));
-    }
-  }
-  throw lastErr;
-}
-
-function cleanOutput(text) {
-  return text
-    .replace(/^["'""„]+|["'""]+$/g, '')
-    .replace(/^(WHAT THIS IS ABOUT|SUMMARY|CONCEPT|OUTPUT|PARAGRAPH)[:\s]*/i, '')
-    .trim();
-}
-
-function parseStructure(raw) {
-  let s = raw.trim().replace(/^```json\s*/i,'').replace(/^```\s*/,'').replace(/```\s*$/,'').trim();
-  const start = s.indexOf('{'), end = s.lastIndexOf('}');
-  if (start !== -1 && end !== -1) s = s.slice(start, end+1);
-  return JSON.parse(s);
-}
-
-function wordCount(text) {
-  return text.trim().split(/\s+/).filter(Boolean).length;
-}
-
-function setStatus(msg, type) {
-  const el = $('status');
-  el.className = 'status' + (type ? ' '+type : '');
-  el.textContent = msg;
-}
-
-function setSpinner(on) {
-  $('spinner').classList.toggle('active', on);
-}
-
-function copyText(text, btn, label='Copy summary') {
-  const done = () => {
-    btn.textContent = 'Copied ✓';
-    setTimeout(() => btn.textContent = label, 2200);
-  };
-  const fallback = () => {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-      document.body.appendChild(ta);
-      ta.focus(); ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      done();
-    } catch(_) {
-      setStatus('Copy failed — select the text above and copy it manually.', 'err');
-    }
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(done).catch(fallback);
-  } else {
-    fallback();
-  }
-}
-
-function renderResults() {
-  const box = $('results');
-  box.innerHTML = '';
-
-  if(!history.length) return;
-
-  const latest = history[history.length - 1];
-  box.appendChild(buildResultEl(latest, false));
-
-  if(history.length > 1) {
-    const divider = document.createElement('div');
-    divider.className = 'hist-label';
-    divider.textContent = 'Previous reads (saved in this browser)';
-    box.appendChild(divider);
-
-    for(let i = history.length - 2; i >= 0; i--) {
-      box.appendChild(buildResultEl(history[i], true));
-    }
-  }
-}
-
-function buildResultEl(entry, old) {
-  const wc = wordCount(entry.concept);
-  const inRange = wc >= 85 && wc <= 135;
-  const typeLabel = MEDIA[entry.type || 'song'].label;
-
-  const el = document.createElement('div');
-  el.className = 'result' + (old ? ' old' : '');
-
-  const structureHTML = entry.structure ? `
-    <div class="structure-box">
-      <span class="lab">Structure read</span>
-      Setting: ${entry.structure.setting || '—'}<br>
-      Posture: ${entry.structure.posture || '—'}<br>
-      Central object/action: ${entry.structure.object || '—'}<br>
-      Core tension/claim: ${entry.structure.contradiction || '—'}
-    </div>` : '';
-
-  el.innerHTML = `
-    <div class="r-head">
-      <span class="r-label">${old ? 'Previous read' : "What this is about"}<span class="r-type">${typeLabel}</span></span>
-      <div class="r-meta">${entry.title ? `<span>${entry.title}</span><br>` : ''}${entry.ts}</div>
+// ---------- Render ----------
+function esc(s){ return String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function render(d, meta){
+  const s = d.seed || {}, e = d.engine || {}, st = d.structure || {};
+  const leakBadge = meta.hits.length
+    ? `<span class="badge warn">Possible leak: ${esc(meta.hits.join(", "))}</span>`
+    : `<span class="badge ok">${meta.repaired ? "Leak fixed" : "No leaks"}</span>`;
+  $("results").innerHTML = `
+  <div class="card out">
+    <div style="margin-bottom:10px">${leakBadge}<span class="badge m">${esc(meta.depth)}</span><span class="badge m">${esc(meta.via)}</span></div>
+    <h2>Theme, in cover</h2>
+    <div class="big">${esc(d.oblique_theme)}</div>
+    <div class="logline">${esc(d.logline)}</div>
+  </div>
+  <div class="card out">
+    <h2>Situation seed</h2>
+    <div class="kv">
+      <div>Body</div><div>${esc(s.body)}</div>
+      <div>Gesture</div><div>${esc(s.gesture)}</div>
+      <div>Object</div><div>${esc(s.object)}</div>
+      <div>Scene</div><div>${esc(s.scene)}</div>
     </div>
-    ${structureHTML}
-    <div class="concept-box"></div>
-    <span class="word-badge ${inRange ? '' : 'warn'}">${wc} words${inRange ? '' : ' — outside target'}</span>
-    <div class="btnrow">
-      <button class="mini copy-btn">Copy summary</button>
-      ${!old ? `<button class="mini danger discard-btn">Discard</button>` : ''}
-    </div>`;
-
-  el.querySelector('.concept-box').textContent = entry.concept;
-  el.querySelector('.copy-btn').addEventListener('click', ev => copyText(entry.concept, ev.target));
-  if(!old) {
-    el.querySelector('.discard-btn').addEventListener('click', () => {
-      history.pop();
-      persistHistory();
-      renderResults();
-    });
-  }
-  return el;
+  </div>
+  <div class="card out">
+    <h2>Emotional engine</h2>
+    <div class="kv">
+      <div>Contradiction</div><div>${esc(e.contradiction)}</div>
+      <div>POV</div><div>${esc(e.pov)}</div>
+      <div>Addressee</div><div>${esc(e.addressee)}</div>
+      <div>Arc</div><div>${esc(e.arc)}</div>
+      <div>Withheld</div><div>${esc(e.withheld)}</div>
+    </div>
+  </div>
+  <div class="card out">
+    <h2>Structure</h2>
+    <div class="kv">
+      <div>Hook job</div><div>${esc(st.hook_job)}</div>
+      <div>Verses</div><div>${esc(st.verses)}</div>
+      <div>Chorus</div><div>${esc(st.chorus)}</div>
+      <div>Turn</div><div>${esc(st.turn)}</div>
+    </div>
+    <h2 style="margin-top:14px">Image families</h2>
+    <ul class="img">${(d.imagery||[]).map(i => `<li>${esc(i)}</li>`).join("")}</ul>
+  </div>
+  <div class="card out">
+    <div class="copyrow">
+      <button class="btn ghost" id="copyTheme">Copy theme + seed</button>
+      <button class="btn ghost" id="copyAll">Copy full breakdown</button>
+    </div>
+    <details style="margin-top:12px">
+      <summary>Verify (reveals the label)</summary>
+      <div style="margin-top:8px" class="small">Tap to unblur: <span class="reveal" onclick="this.classList.toggle('shown')">${esc(d.theme_label)}</span></div>
+    </details>
+  </div>`;
+  const themeTxt = `${d.oblique_theme}\n\n${d.logline}\n\nBody: ${s.body}\nGesture: ${s.gesture}\nObject: ${s.object}\nScene: ${s.scene}`;
+  const allTxt = `${themeTxt}\n\nContradiction: ${e.contradiction}\nPOV: ${e.pov}\nAddressee: ${e.addressee}\nArc: ${e.arc}\nWithheld: ${e.withheld}\n\nHook job: ${st.hook_job}\nVerses: ${st.verses}\nChorus: ${st.chorus}\nTurn: ${st.turn}\n\nImagery: ${(d.imagery||[]).join("; ")}`;
+  $("copyTheme").onclick = () => copy(themeTxt, "copyTheme");
+  $("copyAll").onclick = () => copy(allTxt, "copyAll");
+  $("results").scrollIntoView({behavior:"smooth"});
+}
+function copy(t, id){
+  navigator.clipboard.writeText(t).then(() => { const b = $(id), o = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = o, 1200); });
 }
 
-applyType();
-renderResults();
-
-$('go').addEventListener('click', async () => {
-  const m = MEDIA[currentType];
-  const text = $('lyrics').value.trim();
-  const title = $('songTitle').value.trim();
-  const source = $('artistRef').value.trim();
-
-  if(!text) { setStatus(`Paste ${m.unitLabel.toLowerCase()} first.`,'err'); return; }
-  if(!$('groqKey').value.trim() && !$('anthropicKey').value.trim()) {
-    setStatus('Add a Groq or Anthropic key below.','err'); return;
-  }
-
-  $('go').disabled = true;
-  setSpinner(true);
-  setStatus('Reading the structure…', '');
-
-  let stage = 'structure read';
-  try {
-    // Pass 1: structure
-    const rawStructure = await runWithRetry(structureSystem(m), buildStructurePrompt(text, title, source, m), 250, 'structure read');
-    let structure;
-    try {
-      structure = parseStructure(rawStructure);
-    } catch(parseErr) {
-      throw new Error('Could not read the structure JSON. The model returned something unexpected — try again.');
-    }
-
-    stage = 'summary';
-    setStatus('Writing what it\'s about…', '');
-
-    // Pass 2: what it's about
-    const rawConcept = await runWithRetry(conceptSystem(m), buildConceptPrompt(text, title, source, structure, m), 400, 'summary');
-    const concept = cleanOutput(rawConcept);
-
-    const now = new Date();
-    history.push({
-      concept,
-      structure,
-      title: title || null,
-      type: currentType,
-      ts: now.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
-    });
-    if(history.length > 5) history.shift();
-    persistHistory();
-    clearDraft();
-
-    renderResults();
-    setStatus('', '');
-  } catch(e) {
-    setStatus(`Failed at ${stage}: ${e.message || 'unknown error'}`, 'err');
-    // Text stays in the draft-saved textarea either way — nothing to retype.
-  }
-
-  setSpinner(false);
-  $('go').disabled = false;
-});
+// ---------- History ----------
+function getHist(){ try { return JSON.parse(ls.get("theme_decoder_history","[]")); } catch(e){ return []; } }
+function saveHist(item){ const h = getHist(); h.unshift(item); ls.set("theme_decoder_history", JSON.stringify(h.slice(0,30))); drawHist(); }
+function drawHist(){
+  const h = getHist();
+  $("hist").innerHTML = h.length ? h.map((x,i) => `<div class="hist-item" data-i="${i}"><b>${esc(x.src)}</b><br><span class="small">${esc(x.depth)} · ${new Date(x.t).toLocaleDateString()}</span></div>`).join("") : `<div class="small">Nothing yet.</div>`;
+  $("hist").querySelectorAll(".hist-item").forEach(el => el.onclick = () => { const x = getHist()[+el.dataset.i]; render(x.data, x); });
+}
+$("clearHist").onclick = () => { ls.set("theme_decoder_history","[]"); drawHist(); };
+drawHist();
 </script>
 </body>
 </html>
