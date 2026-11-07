@@ -61,7 +61,7 @@ details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(
 </head>
 <body>
 <div class="wrap">
-  <h1>Theme <span>Decoder</span> <span class="small" style="color:var(--dim)">v1.2</span></h1>
+  <h1>Theme <span>Decoder</span> <span class="small" style="color:var(--dim)">v1.3</span></h1>
   <div class="sub">Reverse-engineer a song. Get the theme back in cover — never by name.</div>
 
   <div class="card">
@@ -90,6 +90,14 @@ details summary{cursor:pointer;font-family:var(--mono);font-size:12px;color:var(
       <button data-depth="ghost">Ghost</button>
     </div>
     <div class="small" id="depthHint" style="margin-top:6px"></div>
+
+    <label>Lyrical density</label>
+    <div class="seg" id="densitySeg">
+      <button data-density="minimal">Minimal</button>
+      <button class="on" data-density="balanced">Balanced</button>
+      <button data-density="elaborate">Elaborate</button>
+    </div>
+    <div class="small" id="densityHint" style="margin-top:6px"></div>
 
     <label>Avoid these patterns</label>
     <div class="chips" id="avoidChips">
@@ -138,8 +146,28 @@ const DEPTH = {
   deep: "Deep cover: the theme lives in a concrete situation. A reader should feel it before they can name it.",
   ghost: "Ghost: maximum distance. Only a physical scene remains; the theme is inferable but never close to the surface."
 };
+const DENSITY = {
+  minimal: {
+    hint: "Very concise and direct. Short lines, lots of breathing room. ~120–180 sung words.",
+    target: "120–180",
+    rules: `- Very concise, emotionally direct lyrics. Short lines, substantial breathing room, restrained imagery, powerful repetition, minimal exposition.
+- Let the hook and a few precise lines carry the song. Silence and space are part of the writing.`
+  },
+  balanced: {
+    hint: "Emotionally rich but concise. Natural flow, selective imagery. ~180–260 sung words.",
+    target: "180–260",
+    rules: `- Emotionally rich but concise. Natural phrasing, strong melodic flow, memorable hooks, selective imagery.
+- Enough development that the song feels complete, without explaining the situation.`
+  },
+  elaborate: {
+    hint: "Layered construction and more development, still no exposition. ~260–350 sung words.",
+    target: "260–350",
+    rules: `- More complex lyrical construction, layered metaphors, and greater emotional development.
+- Still no unnecessary exposition and no excessive description. Complexity should deepen the feeling, not clutter the line.`
+  }
+};
 
-let mode = "lyrics", depth = "deep";
+let mode = "lyrics", depth = "deep", density = "balanced";
 const $ = id => document.getElementById(id);
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } },
@@ -156,6 +184,15 @@ function segWire(id, attr, cb){
 segWire("modeSeg","mode", m => { mode = m; $("lyricsBox").style.display = m==="lyrics"?"":"none"; $("titleBox").style.display = m==="title"?"":"none"; });
 segWire("depthSeg","depth", d => { depth = d; $("depthHint").textContent = DEPTH[d].split(": ")[1]; });
 $("depthHint").textContent = DEPTH.deep.split(": ")[1];
+
+segWire("densitySeg","density", v => { density = v; ls.set("theme_decoder_density", v); $("densityHint").textContent = DENSITY[v].hint; });
+(function initDensity(){
+  const saved = ls.get("theme_decoder_density","balanced");
+  density = DENSITY[saved] ? saved : "balanced";
+  $("densitySeg").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.density === density));
+  $("densityHint").textContent = DENSITY[density].hint;
+})();
+
 document.querySelectorAll("#avoidChips .chip").forEach(c => c.onclick = () => c.classList.toggle("on"));
 
 $("kGroq").value = ls.get("key_groq","");
@@ -379,7 +416,7 @@ function render(d, meta){
   </div>
   <div class="card out gpt">
     <h2>ChatGPT prompt</h2>
-    <label for="bandIn">In the style of (optional)</label>
+    <label for="bandIn">Artist reference (optional)</label>
     <input type="text" id="bandIn" placeholder="Band or artist name">
     <button class="btn" id="makePrompt">Make ChatGPT prompt</button>
     <div id="promptWrap" style="display:none">
@@ -420,40 +457,68 @@ function render(d, meta){
   $("results").scrollIntoView({behavior:"smooth"});
 }
 
+// Songwriting prompt. The DNA is background understanding, not a checklist.
+// Uses the currently selected Lyrical Density.
 function buildGptPrompt(d, brief, band){
   const theme = [clean(d.oblique_theme), clean(d.logline)].filter(Boolean).join(" ");
   const avoid = [...document.querySelectorAll("#avoidChips .chip.on")].map(c => c.dataset.v);
   const extra = $("extraBan").value.split(",").map(x => x.trim()).filter(Boolean);
   const banned = [...BASE_BANNED, ...extra];
+  const dn = DENSITY[density] || DENSITY.balanced;
 
-  const style = band ? `
+  const core = [
+    ["Emotional wound", d.wound], ["Central contradiction", d.contradiction],
+    ["Speaker posture", d.posture], ["Core DNA", d.dna]
+  ].map(([k,v]) => [k, clean(v)]).filter(x => x[1]).map(([k,v]) => `${k}: ${v}`).join("\n");
+  const effects = [
+    ["Emotional delivery", d.delivery], ["What the hook did", d.hook_function],
+    ["What the verses did", d.verse_function], ["The turn", d.turn], ["How it ended", d.ending]
+  ].map(([k,v]) => [k, clean(v)]).filter(x => x[1]).map(([k,v]) => `${k}: ${v}`).join("\n");
 
-STYLE:
-Write in the style of ${band}. Capture their lyrical sensibility — diction, density, attitude, rhythm of phrasing, how directly or obliquely they deliver emotion, and the kind of imagery they reach for. Do not borrow their actual lyrics, titles, signature phrases, or recognizable lines. It should sound like it belongs in their catalog, not like it was pulled from it.` : "";
+  const artist = band ? `
 
-  return `Write a lyrical masterpiece using this theme:
+ARTIST REFERENCE: ${band}
+Use this only as broad guidance for emotional delivery, lyrical density, and musical character. Do not imitate their distinctive lyrical style, and do not borrow their lyrics, titles, or signature phrases.` : "";
 
-${theme}
+  return `Write one completely original song. Write a song, not a story disguised as lyrics.
 
-Use the DNA brief below as the engine of the song.
+A. EMOTIONAL FOUNDATION
+Emotional territory: ${theme}
 
---- DNA BRIEF ---
-${brief}
---- END BRIEF ---${style}
+Background understanding of how a particular source song works. This is NOT a checklist and nothing here has to appear in the lyrics.
+${core}
 
-RULES:
-- Never name the theme directly. Let the listener feel it before they can name it.
-- Show emotion through concrete, physical detail: a body, an involuntary gesture, a specific object.
-- Every line must earn its place. No filler, no generic rhymes, no greeting-card phrasing.
-- No "not X, just Y" constructions.
+Effects the source achieved (descriptions of feeling, not structural requirements):
+${effects}
+
+B. CREATIVE FREEDOM
+Inherit the emotional machinery, not the plot, sequence of events, structure, or descriptive complexity. Simplify, rearrange, reinterpret, or omit any element when it makes a stronger, more original song. Invent new language, situations, and imagery. Do not reuse or closely paraphrase any source lyrics, distinctive imagery, titles, or recognizable expression. Never name the theme directly.
+
+C. SONGWRITING PRIORITIES
+- Emotional impact over explanation. Subtext over exposition. Emotional progression over chronological storytelling.
+- Natural melodic phrasing over literary sophistication. Simple, devastating language over complicated wording.
+- Memorable hooks over elaborate description. Every line must justify its existence.
+- Let the listener interpret what happened. Keep some mystery without becoming vague or generic.
+- Express emotion through direct language, contradiction, vulnerability, subtext, and carefully chosen details. Physical imagery is optional. Never introduce objects, gestures, scenery, or actions solely to make the lyrics more descriptive. One meaningful detail beats several decorative ones. No cinematic narration or sequences of events.
+- Chorus: the emotional center. One powerful central idea in short, repeatable phrasing that contrasts with the verses and gains meaning through repetition. It should feel inevitable, not manufactured. No explanation, competing ideas, long sentences, generic motivational lines, or overwritten metaphors.
+- Verses develop feeling without explaining a narrative. The bridge delivers a real emotional shift without becoming a speech.
+- Singability: concise lines with natural speech stresses, open vowels on held notes, clear breath points, room for sustained notes, pauses, and instrumental passages. Don't overcrowd lines with syllables. Repeat intentionally when it strengthens the hook. Never bend phrasing just to land a rhyme. It should sound effortless when performed.
 - Do not use these words: ${banned.join(", ")}.${avoid.length ? `
 - Avoid these images and patterns: ${avoid.join("; ")}.` : ""}
-- Write for singing: natural stresses, open vowels on held notes, clear breath points.
+- No "not X, just Y" constructions.
 
-FORMAT (for Suno):
-- Section tags in square brackets, with vocal/production direction inside the same bracket, e.g. [Verse 1 — intimate, restrained vocals]
-- Include [Intro], verses, [Pre-Chorus] if it helps, [Chorus], [Bridge], and [Outro] as the song needs.
-- Output the title, then the lyrics only. No commentary.`;
+D. LYRICAL DENSITY: ${density.toUpperCase()}
+${dn.rules}
+- Target roughly ${dn.target} sung words. This is flexible: never sacrifice an effective chorus or emotional moment to hit a count.${artist}
+
+E. SUNO FORMAT
+- Section tags in square brackets with vocal/production direction inside the same bracket, e.g. [Verse 1 — intimate, restrained vocals].
+- Use only the sections the song needs (Intro, Verse, Pre-Chorus, Chorus, Bridge, Outro). Do not force a predetermined structure.
+- The title goes in square brackets on the first line, e.g. [Title].
+- Lyrics plus all section tags must stay under 5,000 characters.
+
+F. FINAL QUALITY CONTROL
+Before answering, silently revise the song: cut lines that explain emotions already communicated, unnecessary physical description, and redundant thoughts; shorten awkward or crowded lines; swap literary phrasing for naturally singable language; strengthen any weak or generic hook; remove sections that add nothing; keep the strongest contradictions and memorable phrases. Do not show this process. Output only the bracketed title and the finished song, no commentary.`;
 }
 function copy(t, id){
   navigator.clipboard.writeText(t).then(() => { const b = $(id), o = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = o, 1200); });
